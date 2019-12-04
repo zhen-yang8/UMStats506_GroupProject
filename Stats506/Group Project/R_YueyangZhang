@@ -1,0 +1,353 @@
+
+library("tidyverse")
+library(haven)
+library(dplyr)
+library(tidyr)
+library(ResourceSelection)
+library(ggplot2)
+
+
+setwd('C:/Users/asus/Desktop/STATS/STATS 506/Group Project')
+
+# Load data and select variables we need and drop NA
+X<-read_xpt("https://wwwn.cdc.gov/Nchs/Nhanes/2005-2006/DEMO_D.XPT")
+X_variable<-X%>%select("SEQN","RIAGENDR","RIDAGEYR","DMDEDUC2","RIDRETH1")%>%
+  drop_na()%>%
+  filter(RIDAGEYR>=20,DMDEDUC2!=7,DMDEDUC2!=9)%>%
+  mutate(RIAGENDR=as.numeric(RIAGENDR==1))%>%
+  transmute(SEQN,gender=RIAGENDR,age=RIDAGEYR,race=RIDRETH1,education=DMDEDUC2)
+
+health_insurance<-read_xpt("https://wwwn.cdc.gov/Nchs/Nhanes/2005-2006/HIQ_D.XPT")
+health_insurance<-health_insurance%>%select(SEQN,HIQ011)%>%drop_na()%>%filter(HIQ011!=7,HIQ011!=9)%>%mutate(insurance=as.numeric(HIQ011==1))%>%select(SEQN,insurance)
+
+Smoking<-read_xpt("https://wwwn.cdc.gov/Nchs/Nhanes/2005-2006/SMQ_D.XPT")
+Smoking<-Smoking%>%select(SEQN,SMQ020)%>%drop_na()%>%filter(SMQ020<7)%>%mutate(smoking=as.numeric(SMQ020!=1))%>%select(SEQN,smoking)
+
+BMI<-read_xpt("https://wwwn.cdc.gov/Nchs/Nhanes/2005-2006/BMX_D.XPT")
+BMI<-BMI%>%select(SEQN,BMXBMI)%>%drop_na()%>%mutate(BMI=as.numeric(BMXBMI>=18.5&BMXBMI<=24.9))%>%select(SEQN,BMI)
+
+Blood_pressure<-read_xpt("https://wwwn.cdc.gov/Nchs/Nhanes/2005-2006/BPX_D.XPT")
+Blood_pressure<-Blood_pressure%>%select(SEQN,BPXSY1,BPXSY2,BPXSY3,BPXDI1,BPXDI2,BPXDI3)%>%gather(condition, BPX, BPXSY1:BPXDI3)%>%
+  mutate(condition=substring(condition,1,5))%>%
+  group_by(SEQN,condition)%>%
+  summarise(BPX=mean(BPX,na.rm=T))%>%
+  ungroup()%>%
+  spread(condition,BPX)%>%
+  drop_na()%>%
+  filter(BPXDI!=0,BPXSY!=0)%>%
+  transmute(SEQN,Blood_pressure=as.numeric((BPXDI<=80)&(BPXSY<=120)))
+
+
+Diet_raw<-read_xpt("https://wwwn.cdc.gov/Nchs/Nhanes/2005-2006/DBQ_D.XPT")
+Diet<-Diet_raw%>%select(SEQN,DBQ700)%>%drop_na()%>%filter(DBQ700!=7,DBQ700!=9)%>%transmute(SEQN,Diet=as.numeric(DBQ700<=3))
+Diet_alt<-Diet_raw%>%select(SEQN,DBQ780)%>%drop_na()%>%filter(DBQ780!=77,DBQ780!=99)%>%transmute(SEQN,Diet=as.numeric(DBQ780<=4))
+
+Physical_Activity<-read_xpt("https://wwwn.cdc.gov/Nchs/Nhanes/2005-2006/PAQIAF_D.XPT")
+Physical_Activity<-Physical_Activity%>%select(SEQN,PADLEVEL,PADTIMES,PADDURAT)%>%drop_na()%>%mutate(times=PADTIMES*PADDURAT*PADLEVEL)%>%group_by(SEQN)%>%summarise(phy_act=as.numeric(sum(times)>=600))%>%select(SEQN,phy_act)
+
+Blood_Cholesterol<-read_xpt("https://wwwn.cdc.gov/Nchs/Nhanes/2005-2006/TCHOL_D.XPT")
+Blood_Cholesterol<-Blood_Cholesterol%>%select(SEQN,LBXTC)%>%drop_na()%>%transmute(SEQN,blood_cho=as.numeric(LBXTC<200))
+
+Blood_Glucose<-read_xpt("https://wwwn.cdc.gov/Nchs/Nhanes/2005-2006/GLU_D.XPT")
+Blood_Glucose<-Blood_Glucose%>%select(SEQN,LBXGLU)%>%drop_na()%>%transmute(SEQN,blood_glu=as.numeric(LBXGLU<=100))
+
+
+# merge all seperate datasets together by SEQN
+raw_data<-X_variable%>%inner_join(health_insurance, by = "SEQN")%>%
+  inner_join(Smoking, by = "SEQN")%>%
+  inner_join(BMI, by = "SEQN")%>%
+  inner_join(Blood_pressure, by = "SEQN")%>%
+  inner_join(Diet, by = "SEQN")%>%
+  inner_join(Physical_Activity, by = "SEQN")%>%
+  inner_join(Blood_Cholesterol, by = "SEQN")%>%
+  inner_join(Blood_Glucose, by = "SEQN")
+
+data<-raw_data%>%transmute(SEQN,CVH=smoking+Blood_pressure+phy_act+blood_cho+blood_glu+BMI+Diet,smoking,Blood_pressure,phy_act,blood_cho,blood_glu,BMI,Diet,gender,age,race,education,insurance)
+
+# We begin first with OLS regression and some diagnostics to view the general relationship between our data.
+OLS<-lm(CVH~gender+race+education+insurance+age,data)
+summary(OLS)
+
+# we delete race variable and get a seemly good model.
+OLS_before<-lm(CVH~gender+education+insurance+age,data)
+summary(OLS_before)
+
+OLS2<-lm(CVH+1~gender+education+insurance+age,data)
+par(mfrow=c(1,1))
+boxcox(OLS2,plotit=T)# 1 is close so no need to do transformation
+
+dat=data.frame(fitted.values=as.vector(OLS$fitted),residuals=as.vector(OLS$residuals))
+ggplot(data=dat,aes(x=fitted.values,y=residuals))+geom_point(color="red",alpha=0.1)+geom_smooth(se=F)
+# It is obvious that OLS model doesn't fit well with our dependent variables discontinuous. But we can still obtain the information that among the 5 predictors, gender, education level, insurance status, and age are more significant that race.
+
+# We polt boxplots for response variable CVH grouped by different predictors. (Here we group age variable)
+data$age[data$age<=30]=100
+data$age[data$age<=40]=101
+data$age[data$age<=50]=102
+data$age[data$age<=60]=103
+data$age[data$age<=70]=104
+data$age[data$age<=80]=105
+data$age[data$age<=99]=106
+data$age=data$age-100
+
+
+p1<-qplot(factor(gender), CVH, facets = . ~ factor(gender), 
+      colour = factor(gender), geom = "boxplot", data = data)
+p2<-qplot(factor(insurance), CVH, facets = . ~ factor(insurance), 
+      colour = factor(insurance), geom = "boxplot", data = data)
+p3<-qplot(factor(education), CVH, facets = . ~ factor(education), 
+      colour = factor(education), geom = "boxplot", data = data)
+p4<-qplot(factor(age), CVH, facets = . ~ factor(age), 
+      colour = factor(age), geom = "boxplot", data = data)
+multiplot(p1, p2, p3, p4,cols=2)
+
+# We can see that the CVH shows difference in different groups. It is resasonable to establish the following mixed effect model
+mixed<-lmer(CVH~gender+(1|education)+insurance+(1|age),data) 
+summary(mixed)
+# through anova test we choose "mixed" model from several possible mixed effect models. 
+
+
+# delete the plot
+dat=data.frame(fitted.values=as.vector(fitted(mixed6)),residuals=as.vector(residuals(mixed6)))
+ggplot(data=dat,aes(x=fitted.values,y=residuals))+geom_point(color="red",alpha=0.1)+geom_smooth(se=T)
+
+# Next we will test whether random effects are warranted
+dev1 = -2*logLik(mixed);dev0 = -2*logLik(OLS_before)
+devdiff = as.numeric(dev0-dev1)
+dfdiff <- attr(dev1,"df")-attr(dev0,"df"); dfdiff
+
+cat('Chi-square =', devdiff, '(df=', dfdiff,'), p =', 
+    pchisq(devdiff,dfdiff,lower.tail=FALSE))
+
+BIC(OLS_before,mixed)
+AIC(OLS_before,mixed)
+
+
+# we can see that mixed effect model is slightly better than OLS model and random effects are significant.
+
+# Till now, we treat CVH as continuous variable and conclude the superficial conclusion that gender has effect on CVH score. females tend to have higher CVH scores.  
+# Next we will analyze in more depth the relationship between gender and each facor of CVH score.
+gender_smoking <- glm(smoking~gender+race+education+insurance+age,data=data, family = "binomial")
+summary(gender_smoking)#1
+hoslem.test(raw_data$BMI, fitted(gender_smoking))
+
+gender_BP <- glm(Blood_pressure~gender+race+education+insurance+age,data, family = "binomial")
+summary(gender_BP)#1
+hoslem.test(raw_data$Blood_pressure, fitted(gender_BP))
+
+gender_phy <- glm(phy_act~gender+race+education+insurance+age,data, family = "binomial")
+summary(gender_phy)#1
+hoslem.test(raw_data$phy_act, fitted(gender_phy))
+
+gender_BC <- glm(blood_cho~gender+race+education+insurance+age,data, family = "binomial")
+summary(gender_BC)##1
+hoslem.test(raw_data$blood_cho, fitted(gender_BC))
+
+gender_BG <- glm(blood_glu~gender+race+education+insurance+age,data, family = "binomial")
+summary(gender_BG)#1
+hoslem.test(raw_data$blood_glu, fitted(gender_BG))
+
+gender_BMI <- glm(BMI~gender+race+education+insurance+age,data, family = "binomial")
+summary(gender_BMI)#0
+hoslem.test(raw_data$BMI, fitted(gender_BMI))
+
+gender_Diet <- glm(Diet~gender+race+education+insurance+age,data, family = "binomial")
+summary(gender_Diet)#0(1 if I use DBQ780)
+hoslem.test(raw_data$Diet, fitted(gender_Diet))
+
+
+
+
+# result table
+seperate_logistic<-data.frame(factors=c("smoking", "Blood_pressure", "phy_act", "blood_cho", "blood_glu",   "BMI",  "Diet"),
+                              gender_effect=c(-0.66056 ,-0.71539,0.43904,0.219156,-0.71387,-0.13844,0.03266),
+                              p_value=c( 1.56e-08,5.50e-05,0.000261,0.05735,2.57e-08,0.27021,0.811942),
+                              significant=c("***","***","***",".","***"," "," "))
+
+
+
+
+####################
+mylogit <- glm(as.numeric(CVH>=3)~gender+age+insurance+education,data, family = "binomial")
+hl<-hoslem.test(as.numeric(data$CVH>=3), fitted(mylogit))
+cbind(hl$observed,hl$expected)
+
+sum(abs(as.numeric(data$CVH>=3)-as.numeric(OLS_before$fitted.values>=3)))
+sum(abs(as.numeric(data$CVH>=3)-as.numeric(fitted(mylogit)>=0.5)))
+sum(abs(as.numeric(data$CVH>=3)-as.numeric(fitted(mixed)>=3)))
+
+132/length(data$CVH)
+
+mean(abs(data$CVH-OLS_before$fitted.values))
+mean(abs(data$CVH-fitted(mixed)))
+
+mylogit<-multinom(CVH ~ gender+age+education+insurance, data = data)
+summary(mylogit)
+z <- summary(mylogit)$coefficients/summary(mylogit)$standard.errors
+p <- (1 - pnorm(abs(z), 0, 1)) * 2
+
+library(ResourceSelection)
+
+
+require(foreign)
+require(nnet)
+require(ggplot2)
+require(reshape2)
+
+data2=data
+data2$CVH[data2$CVH<=2]=13
+data2$CVH[data2$CVH<6]=12
+data2$CVH[data2$CVH<=7]=11
+data2$CVH=data2$CVH-10
+
+
+mylogit<-multinom(CVH ~ gender+age+education+insurance, data = data2)
+summary(mylogit)
+z <- summary(mylogit)$coefficients/summary(mylogit)$standard.errors
+p <- (1 - pnorm(abs(z), 0, 1)) * 2
+
+
+
+qplot(race, CVH, facets = . ~ race, 
+      colour = race, geom = "boxplot", data = data)
+qplot(gender, CVH+1, facets = . ~ gender, 
+      colour = gender, geom = "boxplot", data = data)
+qplot(insurance, CVH, facets = . ~ insurance, 
+      colour = insurance, geom = "boxplot", data = data)
+qplot(education, CVH, facets = . ~ education, 
+      colour = education, geom = "boxplot", data = data)
+qplot(age, CVH, facets = . ~ age, 
+      colour = age, geom = "boxplot", data = data)
+
+
+
+
+mylogit <- glm(as.numeric(CVH>=3)~gender+age+race+education+insurance,data, family = "binomial")
+summary(mylogit)
+
+
+qplot(RIDRETH1, CVH+1, facets = . ~ RIDRETH1, 
+      colour = RIDRETH1, geom = "boxplot", data = data)
+qplot(RIAGENDR, CVH+1, facets = . ~ RIAGENDR, 
+      colour = RIAGENDR, geom = "boxplot", data = data)
+qplot(health_insurance, CVH+1, facets = . ~ health_insurance, 
+      colour = health_insurance, geom = "boxplot", data = data)
+
+
+library(lme4)
+
+mixed<-lmer(CVH+1~RIAGENDR+RIDAGEYR+DMDEDUC2+health_insurance+(1|RIDRETH1),data)
+ww<-summary(mixed)
+
+
+
+BIC(OLS,mixed)
+
+dat=data.frame(fitted.values=as.vector(ww$fitted),residuals=as.vector(ww$residuals))
+ggplot(data=dat,aes(x=fitted.values,y=residuals))+geom_point(color="red",alpha=0.1)+geom_smooth(se=F)
+
+
+library(lmerTest)
+M<-summary()
+data$health_insurance=factor(data$health_insurance)
+M<-summary(lmer(CVH+1~DMDEDUC2+RIAGENDR+RIDRETH1+health_insurance+(1|RIDAGEYR),data))
+
+library(MASS)
+boxcox(OLS,plotit=T)
+
+X_variable
+health_insurance
+Smoking
+BMI
+Body_pressure
+Diet
+Physical_Activity
+Blood_Cholesterol
+Blood_Glucose
+
+dim(Physical_Activity)[1]-length(unique(Physical_Activity$SEQN))
+dim(X_variable)[1]-length(unique(X_variable$SEQN))
+dim(health_insurance)[1]-length(unique(health_insurance$SEQN))
+dim(Smoking)[1]-length(unique(Smoking$SEQN))
+dim(BMI)[1]-length(unique(BMI$SEQN))
+dim(Body_pressure)[1]-length(unique(Body_pressure$SEQN))
+dim(Diet)[1]-length(unique(Diet$SEQN))
+dim(Blood_Cholesterol)[1]-length(unique(Blood_Cholesterol$SEQN))
+dim(Blood_Glucose)[1]-length(unique(Blood_Glucose$SEQN))
+
+
+sample_data<-sample_n(data, 2000, replace = TRUE)
+summary(lm(CVH~RIAGENDR+RIDAGEYR+DMDEDUC2+RIDRETH1+health_insurance,sample_data))
+summary(lm(CVH~RIAGENDR+RIDAGEYR+DMDEDUC2+RIDRETH1+health_insurance,data))
+
+summary(lm(CVH~RIAGENDR+RIDAGEYR+DMDEDUC2+RIDRETH1+health_insurance,data))
+
+
+OLS<-lm(CVH~RIAGENDR+RIDAGEYR+DMDEDUC2+RIDRETH1+health_insurance,data)
+summary(step(OLS))
+
+summary(lmer(log(CVH+1)~DMDEDUC2+(1|RIDAGEYR)+(1|health_insurance),data))
+
+
+
+g =lm(pm2.5~., data = AQ)
+boxcox(g,plotit=T)
+
+
+data2=data
+data2$CVH[data2$CVH>=4]=1
+data2$CVH[data2$CVH<=3]=0
+
+library(lmerTest)
+
+summary(lmer(log(CVH+1)~RIDAGEYR+DMDEDUC2+RIDRETH1+health_insurance+(1|RIAGENDR),data))
+
+summary(glm(CVH~RIAGENDR+RIDAGEYR+DMDEDUC2+RIDRETH1+health_insurance, family = "binomial",data = data))
+
+summary(lm(CVH~RIDAGEYR+DMDEDUC2+RIDRETH1+health_insurance,data=data,subset=(RIAGENDR==1)))
+summary(lm(CVH~RIDAGEYR+DMDEDUC2+RIDRETH1+health_insurance,data=data,subset=(RIAGENDR==2)))
+
+data2=data[data$RIAGENDR==0,]
+lm(CVH~RIAGENDR+RIDAGEYR+DMDEDUC2+RIDRETH1+health_insurance,data=data)
+
+test<-multinom(CVH~RIAGENDR+RIDAGEYR+DMDEDUC2+RIDRETH1+health_insurance,data=data)
+
+z <- summary(test)$coefficients/summary(test)$standard.errors
+
+p <- (1 - pnorm(abs(z), 0, 1))*2
+
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  require(grid)
+  
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+  
+  numPlots = length(plots)
+  
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                     ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+  
+  if (numPlots==1) {
+    print(plots[[1]])
+    
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+    
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+      
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
