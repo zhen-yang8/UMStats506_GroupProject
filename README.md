@@ -1,3 +1,4 @@
-# UMich
+# Stats 506, Fall 2019, UMich
+# Group Project
 
-Zhen YANG's file at University of Michigan
+Zhen YANG, Yueyang Zhang, Karen WANG
