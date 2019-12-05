@@ -1,15 +1,4 @@
----
-title: "Group_Project"
-author: "Yueyang Zhang"
-date: "2019Äê12ÔÂ4ÈÕ"
-output: html_document
----
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-```{r message=FALSE, warning=FALSE, paged.print=FALSE}
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
 # Loading packages needed in following steps
 library("tidyverse")
 library(haven)
@@ -67,8 +56,8 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 }
 ```
 
-Here need to states how we deal with our data.(important)
-```{r}
+We first process the data before fitting a model.
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 library(MASS)
 detach("package:MASS", unload=TRUE)
 # Load data and select variables we need and drop NA
@@ -160,10 +149,37 @@ data<-raw_data%>%transmute(SEQN,CVH=smoking+Blood_pressure+phy_act+blood_cho+blo
 # Then we get our final version dataset
 data
 ```
-
-
+**Data Summary**  
+Here is a description of our data
 ```{r}
-# First we analyze the relationship between gender and each facor of CVH score using logistic model
+
+```
+
+To find out more about the relationship between variables, We also polt box plots for response variable CVH grouped by different predictors. (Here we group age variable)
+```{r echo=FALSE}
+data$age_group=ceiling(data$age/10)-3
+data$age_group[data$age_group==-1]=0
+
+p1<-qplot(factor(gender), CVH, 
+      colour = factor(gender), geom = "boxplot", data = data)
+p2<-qplot(factor(insurance), CVH, 
+      colour = factor(insurance), geom = "boxplot", data = data)
+p3<-qplot(factor(education), CVH, 
+      colour = factor(education), geom = "boxplot", data = data)
+p4<-qplot(factor(age_group), CVH, 
+      colour = factor(age_group), geom = "boxplot", data = data)
+p5<-qplot(factor(race), CVH, 
+      colour = factor(race), geom = "boxplot", data = data)
+
+multiplot(p1, p2, cols=2)
+multiplot(p3, p5, cols=2)
+multiplot(p4, cols=1)
+```
+
+
+**Logistic Regression on each indicator seperately**  
+First we analyze the relationship between gender and each indicator of CVH score using logistic model.
+```{r message=FALSE, warning=FALSE}
 gender_smoking <- summary(glm(smoking~gender+education+age+insurance+race,data=data, family = "binomial"))
 gender_BP <-summary(glm(Blood_pressure~gender+education+age+insurance+race,data, family = "binomial"))
 gender_phy <- summary(glm(phy_act~gender+education+age+insurance+race,data, family = "binomial"))
@@ -189,14 +205,17 @@ for (i in list(gender_smoking,gender_BP,gender_phy,gender_BC,gender_BG,gender_BM
 
 formattable::formattable(seperate)
 ```
+From the output we can see that gender has significant effect on smoking, Blood_pressure, phy_act, blood_glu. Which means that female is more likely to be non-smoker, have a normal blood pressure, do less healthy physical activity and have normal blood glucose level. This is quite consistent with commen sense.
 
-Then we will conduct OLS analysis
-```{r warning=FALSE}
-# We begin first with OLS regression and some diagnostics to view the general relationship between our data.
+Then we will treat overall CVH score as continuous variable and conduct some regression analysis to check the relationship between CVH and gender.
+
+**Fitting an OLS model**  
+We first begin with OLS full model. It is obvious that race is insignificant and we choose to delete this variable. The Box-Cox plot suggests no transformation needed for response. 
+```{r message=FALSE, warning=FALSE}
 OLS_full<-lm(CVH~gender+race+education+insurance+age,data)
 summary(OLS_full)
 
-# we delete race variable and get a seemly good model.
+# R square is still quite small but anyway this model is better than null model based on F test.
 OLS_opt<-lm(CVH~gender+education+insurance+age,data)
 summary(OLS_opt)
 
@@ -204,44 +223,27 @@ OLS2<-lm(CVH+1~gender+education+insurance+age,data)
 library(MASS)
 boxcox(OLS2,plotit=T)# 1 is in the confidence interval so no need to do transformation
 
-dat=data.frame(fitted.values=as.vector(OLS_opt$fitted),residuals=as.vector(OLS_opt$residuals))
-ggplot(data=dat,aes(x=fitted.values,y=residuals))+geom_point(color="red",alpha=0.1)+geom_smooth(se=T)
-# It is obvious that OLS model doesn't fit well with our dependent variables discontinuous. But we can still obtain the information that among the 5 predictors, gender, education level, insurance status, and age are more significant that race.
-
+#dat=data.frame(fitted.values=as.vector(OLS_opt$fitted),residuals=as.vector(OLS_opt$residuals))
+#ggplot(data=dat,aes(x=fitted.values,y=residuals))+geom_point(color="red",alpha=0.1)+geom_smooth(se=T)
 ```
 
-
+**Mixed Effect Model**  
+Back to our box plots,we can see that the CVH shows difference in different age groups. It is resasonable to establish the following mixed effect model. 
 ```{r}
-# We polt boxplots for response variable CVH grouped by different predictors. (Here we group age variable)
-data$age_group=ceiling(data$age/10)-3
-data$age_group[data$age==-1]=0
-
-p1<-qplot(factor(gender), CVH, facets = . ~ factor(gender), 
-      colour = factor(gender), geom = "boxplot", data = data)
-p2<-qplot(factor(insurance), CVH, facets = . ~ factor(insurance), 
-      colour = factor(insurance), geom = "boxplot", data = data)
-p3<-qplot(factor(education), CVH, facets = . ~ factor(education), 
-      colour = factor(education), geom = "boxplot", data = data)
-p4<-qplot(factor(age_group), CVH, facets = . ~ factor(age_group), 
-      colour = factor(age_group), geom = "boxplot", data = data)
-
-multiplot(p1, p2, p3, p4,cols=2)
-
-```
-From the plots We can see that the CVH shows difference in different groups. It is resasonable to establish the following mixed effect model
-```{r}
-mixed=lme(CVH~gender+insurance+age+education, random=~1|age_group/education/insurance,  
+mixed=lme(CVH~gender+insurance+age+education, random=~1|education+1|age_group,  
          method = 'ML', data = data)
 
-# Conduct Analysis of Variance and find this model dignificant.(?) and draw residuals_fitted plot
+summary(mixed)
+```
+Conduct Analysis of Variance and we find this model significant. We draw the residuals-fitted plot. The line looks flat, the residuals and fitted values seems to be less irrelevant compared to the OLS model. Then we test whether random effects are warranted:
+```{r message=FALSE, warning=FALSE}
 Anova(mixed)
 
 dat=data.frame(fitted.values=as.vector(fitted(mixed)),residuals=as.vector(residuals(mixed)))
 ggplot(data=dat,aes(x=fitted.values,y=residuals))+geom_point(color="red",alpha=0.1)+geom_smooth(se=T)
-
 ```
-Next we will test whether random effects are warranted
-```{r}
+
+```{r eval=FALSE, include=FALSE}
 # lm.test
 dev1 = -2*logLik(mixed);dev0 = -2*logLik(OLS_opt)
 devdiff = as.numeric(dev0-dev1)
@@ -249,24 +251,16 @@ dfdiff <- attr(dev1,"df")-attr(dev0,"df");
 cat('Chi-square =', devdiff, '(df=', dfdiff,'), p =', 
     pchisq(devdiff,dfdiff,lower.tail=FALSE))
 ```
-
-And we also test the random effects in the model by comparing the model to a model fitted with just the fixed effects and excluding the random effects.  (they are the same in depth)
+We test the random effects in the model by comparing the model to a model fitted with just the fixed effects and excluding the random effects. 
 ```{r}
-
 model.fixed = gls(CVH~gender+insurance+age+education,
                   data=data,
                   method="ML")
-
 anova(model.fixed,mixed)
 ```
-We can see that the random effects are significant, and the mixed model has smaller AIC and BIC and larger loglik
+From the p value for likelihood ratio test and the comparision of AIC, BIC and loglik, we can conclude that the random effects are significant since this mixed model is significantly different from the OLS model. It has smaller AIC and BIC, and larger logLik. 
 
-
-```{r cars}
-summary(mixed)
-```
 
 To conclude, factors related to a favorable CVH score included insurance covered, younger age, female sex, and a higher level of education.
 
 So the answer to the question we brought up is yes, women tend to have a better cardiovascular health condition than men in the US. 
-
