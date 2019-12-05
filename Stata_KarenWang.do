@@ -208,4 +208,4 @@ graph box cvh, over(age_factor) title("Box plot for Age", span)
 graph save "Graph" "M:\box_age.gph", replace
 
 
-mixed cvh i.gender i.insurance i.age_factor i.edu ||_all:R.age_factor ||_all:R.edu
+mixed cvh i.gender i.insurance c.age c.edu ||_all:R.age_factor
