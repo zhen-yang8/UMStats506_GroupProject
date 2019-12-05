@@ -4,12 +4,16 @@ author: Zhen Yang, Yueyang Zhang, Karen Wang
 output: html_document
 ---
 ## Introduction
-##### cardiovascular health is one of the greatest health problems across the entire globe. Overall, heart disease, is the No. 1 killer in the United States. Therefore, it is interesting to see if gender have an impact on cardiovascular health.
+##### Cardiovascular health is one of the greatest health problems across the entire globe. Overall, heart disease, is the No. 1 killer in the United States. Therefore, it is interesting to see if gender have an impact on cardiovascular health.
+##### It is known that there are seven index variables that determine the cardiovascular health (CVH). Smoking, BMI, Physical Activity, Diet, Blood Cholesterol, and Health Insurance. Each of the seven index variables is modified into a binary variable, CVH score is calcuated by taking the sum of these seven variables.
 
 ## Data
 ##### The data sets we used in this analysis are from the NHANES (National Health and Nutrition Examination Survey) in from year 2005 - 2006. 
+
+
+
+#### Index Variables used to compute CVH scores:
 ```
-Key Variables used to compute CVH scores:
 Variables                        Description 
 BMI             Body Mass Index
 Diet            How healthy is the diet
@@ -20,16 +24,24 @@ Cholesterol     Total blood cholesterol (<200 mg/dL is normal)
 Blood Pressure  Mean systolic <120mm and diastolic <80 is normal
 ```
 
+#### Control Variables:
+```
+Variables           Level                                  Description (respectively)
+Age                1,2,3,4,5,6,7,8,9  Each number represents a decade starting 0-10
+Race               1,2,3,4,5          Mexican, Other Hispanic, Non-Hispanic White, Non-Hispanic Black, Other
+Gender             0,1                Female, Male
+Education          1,2,3,4,5          Less Than 9th Grade, 9-11th Grade (Includes 12th grade with no diploma), High School Grad/GED or Equivalent, Some College or AA degree, College Graduate or above
+Health Insurance   0,1                With, Without
+```
 ## Methods
-##### It is known that there are seven key variables that determine the cardiovascular health (CVH). Smoking, BMI, Physical Activity, Diet, Blood Cholesterol, and Health Insurance. Each of the seven key variables is modified into a binary variable, CVH score is calcuated by taking the sum of these seven variables.
-#### Liniear models and Linear Mixed effects models in Python, R and Stata
+##### We first use 7 binary index variables to calculate the score (range 0-7) of CVH. Next, start with a simple indicator-by-indicator comparison to assess prevalence of ideal CVH(scored 6-7) among female and male using standard logistic regression. In other words, first regressing each indicator of CVH against gender (and control variables) one at a time. Then, we use the ordinary least squares to fit all the variables. By examing the significance of each variable, we decide to take out race since it has a very large p-value. After reducing to four variables, we fit the linear model again and re-examine the significance level of our variables. However, linear model is not sufficient to get the result. We decided to take a step further applying mixed linear model. In order to see the differences among groups, we drew boxplots on each of the variables after the variable selection by CVH scores.
+
+##### Liniear models and Linear Mixed effects models in Python, R and Stata
 
 ## Core Analysis {.tabset .tabset-fade}
 ### Python
 ### R
 ### Stata
-```{r setup, include=FALSE}
-
-```
 
 ## Results
+##### 
