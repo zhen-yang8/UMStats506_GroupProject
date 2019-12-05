@@ -1,0 +1,35 @@
+---
+title: "STATS506 Group Project"
+author: Zhen Yang, Yueyang Zhang, Karen Wang
+output: html_document
+---
+## Introduction
+##### cardiovascular health is one of the greatest health problems across the entire globe. Overall, heart disease, is the No. 1 killer in the United States. Therefore, it is interesting to see if gender have an impact on cardiovascular health.
+
+## Data
+##### The data sets we used in this analysis are from the NHANES (National Health and Nutrition Examination Survey) in from year 2005 - 2006. 
+```
+Key Variables used to compute CVH scores:
+Variables                        Description 
+BMI             Body Mass Index
+Diet            How healthy is the diet
+Smoking         Smoked at least 100 cigarettes in life
+Glucose         Fasting blood glucose (<=100 mg/dL is normal)
+Activity        Physical Activity level multiply the duration of time
+Cholesterol     Total blood cholesterol (<200 mg/dL is normal)
+Blood Pressure  Mean systolic <120mm and diastolic <80 is normal
+```
+
+## Methods
+##### It is known that there are seven key variables that determine the cardiovascular health (CVH). Smoking, BMI, Physical Activity, Diet, Blood Cholesterol, and Health Insurance. Each of the seven key variables is modified into a binary variable, CVH score is calcuated by taking the sum of these seven variables.
+#### Liniear models and Linear Mixed effects models in Python, R and Stata
+
+## Core Analysis {.tabset .tabset-fade}
+### Python
+### R
+### Stata
+```{r setup, include=FALSE}
+
+```
+
+## Results
