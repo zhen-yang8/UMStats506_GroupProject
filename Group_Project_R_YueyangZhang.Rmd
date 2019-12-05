@@ -1,3 +1,14 @@
+---
+title: "Group_Project"
+author: "Yueyang Zhang"
+date: "2019.12.4"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
 ```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
 # Loading packages needed in following steps
 library("tidyverse")
