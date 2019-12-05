@@ -4,8 +4,8 @@ drop if smq020 == 7
 drop if smq020 == 9
 drop if smq020 ==.
 rename smq020 smoking
-replace smoking = 1 if smoking == 2
 replace smoking = 0 if smoking == 1
+replace smoking = 1 if smoking == 2
 rename seqn id
 save "M:\smoking.dta", replace
 
@@ -168,11 +168,6 @@ egen count = rownonmiss(_all)
 drop if count <13
 drop count
 generate cvh = smoking + bmi + diet + cholesterol + glucose +bp + activity
-save "M:\group_project_data.dta", replace
-
-use M:\group_project_data.dta
-regress cvh gender age race edu insurance
-regress cvh gender age edu insurance
 
 generate age_factor = 1
 replace age_factor = 2 if age > 10 & age < 20
@@ -183,5 +178,34 @@ replace age_factor = 6 if age > 50 & age < 60
 replace age_factor = 7 if age > 60 & age < 70
 replace age_factor = 8 if age > 70 & age < 80
 replace age_factor = 9 if age > 80
+save "M:\group_project_data.dta", replace
 
-mixed cvh i.gender i.insurance ||_all:R.age_factor ||_all:R.edu
+
+//modeling
+use M:\group_project_data.dta
+logistic smoking i.gender i.edu i.age_factor i.insurance i.race
+logistic bp i.gender i.edu i.age_factor i.insurance i.race
+logistic activity i.gender i.edu i.age_factor i.insurance i.race
+logistic cholesterol i.gender i.edu i.age_factor i.insurance i.race
+logistic glucose i.gender i.edu i.age_factor i.insurance i.race
+logistic bmi i.gender i.edu i.age_factor i.insurance i.race
+logistic diet i.gender i.edu i.age_factor i.insurance i.race
+
+
+regress cvh gender age_factor race edu insurance
+regress cvh gender age_factor edu insurance
+
+graph box cvh, over(gender)
+graph save "Graph" "M:\box_gender.gph",replace
+
+graph box cvh, over(edu)
+graph save "Graph" "M:\box_edu.gph", replace
+
+graph box cvh, over(insurance)
+graph save "Graph" "M:\box_insurance.gph", replace
+
+graph box cvh, over(age_factor)
+graph save "Graph" "M:\box_age.gph", replace
+
+
+mixed cvh i.gender i.insurance i.age_factor i.edu ||_all:R.age_factor ||_all:R.edu
