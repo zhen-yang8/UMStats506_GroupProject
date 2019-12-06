@@ -1,14 +1,18 @@
 ---
 title: "STATS506 Group Project"
 author: Zhen Yang, Yueyang Zhang, Karen Wang
+date: "12/4/2019"
 output: html_document
 ---
 ## Introduction
-##### Cardiovascular health is one of the greatest health problems across the entire globe. Overall, heart disease, is the No. 1 killer in the United States. Therefore, it is interesting to see if gender have an impact on cardiovascular health.
-##### It is known that there are seven index variables that determine the cardiovascular health (CVH). Smoking, BMI, Physical Activity, Diet, Blood Cholesterol, and Health Insurance. Each of the seven index variables is modified into a binary variable, CVH score is calcuated by taking the sum of these seven variables.
+
+Cardiovascular health is one of the greatest health problems across the entire globe. Overall, heart disease, is the No. 1 killer in the United States. Therefore, it is interesting to see if gender have an impact on cardiovascular health.
+
+It is known that there are seven index variables that determine the cardiovascular health (CVH). Smoking, BMI, Physical Activity, Diet, Blood Cholesterol, and Health Insurance. Each of the seven index variables is modified into a binary variable, CVH score is calcuated by taking the sum of these seven variables.
 
 ## Data
-##### The data sets we used in this analysis are from the NHANES (National Health and Nutrition Examination Survey) in from year 2005 - 2006. 
+
+The data sets we used in this analysis are from the NHANES (National Health and Nutrition Examination Survey) in from year 2005 - 2006. 
 
 #### Index Variables used to compute CVH scores:
 | Variables      | Description                                           | Dataset  |
@@ -31,9 +35,10 @@ output: html_document
 | Health Insurance | 0,1               | With, Without                                                                                    | HIQ_D   |
 
 ## Methods
-##### We first use 7 binary index variables to calculate the score (range 0-7) of CVH. Next, start with a simple indicator-by-indicator comparison to assess prevalence of ideal CVH(scored 6-7) among female and male using standard logistic regression. In other words, first regressing each indicator of CVH against gender (and control variables) one at a time. Then, we use the ordinary least squares to fit all the variables. By examing the significance of each variable, we decide to take out race since it has a very large p-value. After reducing to four variables, we fit the linear model again and re-examine the significance level of our variables. However, linear model is not sufficient to get the result. We decided to take a step further applying mixed linear model. In order to see the differences among groups, we drew boxplots on each of the variables after the variable selection by CVH scores.
 
-##### Liniear models and Linear Mixed effects models in Python, R and Stata
+We first use 7 binary index variables to calculate the score (range 0-7) of CVH. Next, start with a simple indicator-by-indicator comparison to assess prevalence of ideal CVH(scored 6-7) among female and male using standard logistic regression. In other words, first regressing each indicator of CVH against gender (and control variables) one at a time. Then, we use the ordinary least squares to fit all the variables. By examing the significance of each variable, we decide to take out race since it has a very large p-value. After reducing to four variables, we fit the linear model again and re-examine the significance level of our variables. However, linear model is not sufficient to get the result. We decided to take a step further applying mixed linear model. In order to see the differences among groups, we drew boxplots on each of the variables after the variable selection by CVH scores.
+
+Liniear models and Linear Mixed effects models in Python, R and Stata
 
 ## Core Analysis {.tabset .tabset-fade}
 ### Python
