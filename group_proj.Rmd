@@ -429,6 +429,7 @@ graph box cvh, over(age_factor) title("Box plot for Age", span)
 ```{r mixed, eval=FALSE}
 mixed cvh i.gender i.insurance c.age c.edu ||_all:R.age_factor
 ```
+![](https://raw.githubusercontent.com/shswkw/UMStats506_GroupProject/master/mixed.png){width=500px}
 
 #### Data Visualization
 ![](https://raw.githubusercontent.com/shswkw/UMStats506_GroupProject/master/age-box.png){width=350px}
