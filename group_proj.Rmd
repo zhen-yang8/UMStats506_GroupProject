@@ -1,56 +1,102 @@
 ---
 title: "STATS506 Group Project"
 author: Zhen Yang, Yueyang Zhang, Karen Wang
-date: "12/4/2019"
+date: "December, 2019"
 output: html_document
 ---
+
 ## Introduction
 
-Cardiovascular health is one of the greatest health problems across the entire globe. Overall, heart disease, is the No. 1 killer in the United States. Therefore, it is interesting to see if gender have an impact on cardiovascular health.
+Cardiovascular health (CVH) is one of the greatest health problems across the entire globe. Overall, heart disease, is the No. 1 killer in the United States. Therefore, it is interesting to see if gender have an impact on cardiovascular health.
 
-It is known that there are seven index variables that determine the cardiovascular health (CVH). Smoking, BMI, Physical Activity, Diet, Blood Cholesterol, and Health Insurance. Each of the seven index variables is modified into a binary variable, CVH score is calcuated by taking the sum of these seven variables.
+The American Heart Association defined a new concept as *Cardiovascular Health*, which is determined by the presence of 7 metrics: smoking, body mass index (BMI), physical activity, diet, blood cholesterol, blood glucose and blood pressure.
+
+We will first investigate whether gender causes an effect on each of the seven metrics of cardiovascular health, and then combining them into one model, analyze the impact of gender on the overall cardiovascular health.
+
+
 
 ## Data
 
-The data sets we used in this analysis are from the NHANES (National Health and Nutrition Examination Survey) in from year 2005 - 2006. 
+The datasets we used in this analysis are from the NHANES (National Health and Nutrition Examination Survey) from year [2005 - 2006](https://wwwn.cdc.gov/nchs/nhanes/ContinuousNhanes/Default.aspx?BeginYear=2005).
 
-#### Index Variables used to compute CVH scores:
-| Variables      | Description                                           | Dataset  |
-|----------------|-------------------------------------------------------|----------|
-| BMI            | Body Mass Index                                       | BMX_D    |
-| Diet           | How healthy is the diet                               | DBQ_D    |
-| Smoking        | Smoked at least 100 cigarettes in life                | SMQ_D    |
-| Glucose        | Fasting blood glucose (<=100 mg/dL is normal)         | GLU_D    |
-| Activity       | Physical Activity level multiply the duration of time | PAQIAF_D |
-| Cholesterol    | Total blood cholesterol (<200 mg/dL is normal)        | TCHOL_D  |
-| Blood Pressure | Mean systolic <120mm and diastolic <80 is normal      | BPX_D    |s
 
-#### Control Variables:
-| Variables        | Level             | Description (respectively)                                                                       | Dataset |
-|------------------|-------------------|--------------------------------------------------------------------------------------------------|---------|
-| Age              | 1,2,3,4,5,6,7,8,9 | Each number represents a decade starting 0-10                                                    | DEMO_D  |
-| Race             | 1,2,3,4,5         | Mexican, Other Hispanic, Non-Hispanic White, Non-Hispanic Black, Other                           | DEMO_D  |
-| Gender           | 0,1               | Female, Male                                                                                     | DEMO_D  |
-| Education        | 1,2,3,4,5         | Less Than 9th Grade, 9-11th Grade, High School Grad/GED, Some College, College Graduate or above | DEMO_D  |
-| Health Insurance | 0,1               | With, Without                                                                                    | HIQ_D   |
+#### Response Variable:
+
+In our analysis, each of the seven metrics of cardiovascular health is treated as a binary variable, taking the value of 1 when one meets the criterion while 0 when one does not. CVH score is calculated by taking the sum of these seven binary variables which is shown in the table below.
+
+| Response           	| Criteria                                                                             	| Datasets 	| Variable Names                                             	|
+|-------------------	|--------------------------------------------------------------------------------------	|----------	|------------------------------------------------------------	|
+| smoking           	| Smoked less than 100 cigarettes in life.                                             	| SMQ_D    	| SMQ020                                                     	|
+| BMI               	| Body mass index between 18.5 and 24.9 inclusive.                                     	| BMX_D    	| BMXBMI                                                     	|
+| physical activity 	| At least 600-minute moderate (or 300-minute vigorous) exercises in the past 30 days. 	| PAQIAF_D 	| PADLEVEL, PADTIMES, PADDURAT                               	|
+| diet              	| Overall diet is considered healthy by the survey participant.                        	| DBQ_D    	| DBQ700                                                     	|
+| blood cholesterol 	| Total cholesterol <200 mg/dL.                                                        	| TCHOL_D  	| LBXTC                                                      	|
+| blood glucose     	| Fasting blood glucose ≤100 mg/dL.                                                    	| GLU_D    	| LBXGLU                                                     	|
+| blood pressure    	| Ideal blood pressure is <120/80 mm Hg.                                               	| BPX_D    	| BPXSY1,BPXDI1, BPXSY2,BPXDI2, BPXSY3,BPXDI3, BPXSY4,BPXDI4 	|
+| CVH               	| Overall CVH score by summing up the seven binary variable above.                        	|          	|                                                            	|
+
+
+#### Predictor Variables:
+
+Our analysis focuses on survey participants aged over 20 years old and retrieves their basic demographic characteristics including gender, age, race, level of education and health insurance status. Gender is our main factor of interest while other variables are covariates that help build and illustrate our model.
+
+
+| Predictors 	| Value/Level 	| Description  	| Dataset 	| Variable 	|
+|------------------	|-----------------	|--------------------------------------------------------------------------------------------------	|---------	|----------	|
+| gender 	| {0, 1} 	| Female, Male 	| DEMO_D 	| RIAGENDR 	|
+| age 	| [20, 85] 	| Age 	| DEMO_D 	| RIDAGEYR 	|
+| race 	| {1, 2, 3, 4, 5} 	| Mexican, Other Hispanic, Non-Hispanic White, Non-Hispanic 	| DEMO_D 	| RIDRETH1 	|
+| education 	| {1, 2, 3, 4, 5} 	| Less Than 9th Grade, 9-11th Grade, High School Grad/GED, Some College, College Graduate or above 	| DEMO_D 	| DMDEDUC2 	|
+| insurance 	| {0, 1} 	| With health insurance, Without health insurance 	| HIQ_D 	| HIQ011 	|
+
 
 ## Methods
 
-We first use 7 binary index variables to calculate the score (range 0-7) of CVH. Next, start with a simple indicator-by-indicator comparison to assess prevalence of ideal CVH(scored 6-7) among female and male using standard logistic regression. In other words, first regressing each indicator of CVH against gender (and control variables) one at a time. Then, we use the ordinary least squares to fit all the variables. By examing the significance of each variable, we decide to take out race since it has a very large p-value. After reducing to four variables, we fit the linear model again and re-examine the significance level of our variables. However, linear model is not sufficient to get the result. We decided to take a step further applying mixed linear model. In order to see the differences among groups, we drew boxplots on each of the variables after the variable selection by CVH scores.
+Regression models are adopted in the whole analysis, which is a powerful and popular statistical tool in assessing the relationship between predictor variables and response variables. Our analysis consists of two major parts which differs from each other in the response variables that we look into in the regression model. 
 
-Liniear models and Linear Mixed effects models in Python, R and Stata
+1. The first part is indicator-by-indicator logistic regression models. Since there are seven metrics for cardiovascular health, we regress each indicator (binary variable) of CVH against gender and control variables, and make a comparison of the significance of gender among these seven models.
+
+In the logistic regression model, we have the binary response variable $Y_{smoking}$, and predictor variable`gender`, `age`, `race`, `education` and `insurance`, so we fit a model of $ p_{smoking} = P(Y_{smoking}=1) $ against all five predictors, whose formula can be given as
+$$ \log\frac{p_{smoking}}{1-p_{smoking}} = \beta_0 + \beta_1 X_{gender} + \beta_2 X_{age} + \beta_3 X_{race} + \beta_4 X_{education} + \beta_5 X_{insurance} $$
+
+Similarly, for the other six binary response variable, the corresponding logistic formulas are
+$$ \log\frac{p_{bmi}}{1-p_{bmi}} = \beta_0 + \beta_1 X_{gender} + \beta_2 X_{age} + \beta_3 X_{race} + \beta_4 X_{education} + \beta_5 X_{insurance} $$
+$$ \log\frac{p_{physical\_activity}}{1-p_{physical\_activity}} = \beta_0 + \beta_1 X_{gender} + \beta_2 X_{age} + \beta_3 X_{race} + \beta_4 X_{education} + \beta_5 X_{insurance} $$
+$$ \log\frac{p_{diet}}{1-p_{diet}} = \beta_0 + \beta_1 X_{gender} + \beta_2 X_{age} + \beta_3 X_{race} + \beta_4 X_{education} + \beta_5 X_{insurance} $$
+$$ \log\frac{p_{blood\_cholesterol}}{1-p_{blood\_cholesterol}} = \beta_0 + \beta_1 X_{gender} + \beta_2 X_{age} + \beta_3 X_{race} + \beta_4 X_{education} + \beta_5 X_{insurance} $$
+$$ \log\frac{p_{blood\_glucose}}{1-p_{blood\_glucose}} = \beta_0 + \beta_1 X_{gender} + \beta_2 X_{age} + \beta_3 X_{race} + \beta_4 X_{education} + \beta_5 X_{insurance} $$
+$$ \log\frac{p_{blood\_pressure}}{1-p_{blood\_pressure}} = \beta_0 + \beta_1 X_{gender} + \beta_2 X_{age} + \beta_3 X_{race} + \beta_4 X_{education} + \beta_5 X_{insurance} $$
+
+
+2. The second part concerns with gender’s effect on the overall CVH scores by adopting several regression models, from multiple linear regression to linear mixed model. Precisely, we first use the ordinary least squares criterion to fit a multiple linear regression model on all predictor variables. By examining the significance of each variable, we decide to take out `race` since it has a very large p-value. After reducing to four variables, we fit the linear model again and re-examine the significance level of our variables. However, linear model is not sufficient to get the result. We decided to take a step further applying mixed linear model. In order to see the differences among groups, we drew boxplots on each of the variables after the variable selection by CVH scores.
+
+The multiple linear regression is expressed as
+$$ \text{CVH} = \beta_0 + \beta_1 X_{gender} + \beta_2 X_{age} + \beta_3 X_{race} + \beta_4 X_{education} + \beta_5 X_{insurance}  $$
+With backward elimination, the reduced linear model is
+$$ \text{CVH} = \beta_0 + \beta_1 X_{gender} + \beta_2 X_{age} + \beta_3 X_{education} + \beta_4 X_{insurance}  $$
+Linear mixed model is carried out as
+$$ \text{CVH}_j = \beta_0 + \beta_1 X_{gender} + \beta_2 X_{age} + \beta_3 X_{education} + \beta_4 X_{insurance} + \text{intercept}_j$$
+where $\text{intercept}_j$ is the random intercept for each group (random effect).
+
+The following analysis is implemented separately in three programming languages, Python, R and Stata but shares a common outline as described above.
+
+
+
 
 ## Core Analysis {.tabset .tabset-fade}
-### Python
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+### Python
+
 #### Data visualization
+
+For the predictor variables, we create boxplots for each of the categorical variable. Since `age` is a continuous variable, which is hard to make a boxplot, we generate a new variable called `age_decades` which group every 10 years people into one category (i.e. divided with no remainder). 
 ![](./rmd_output/python_boxplot.png)
 
-##### Logistic regression on each indicator
+#### Logistic regression on each indicator of CVH
 ```{python eval=FALSE}
 df.exog = sm.add_constant(df[["gender", "age", "race", "education", "insurance"]])
 params = []; pvalues = []
@@ -65,9 +111,13 @@ for col in y_cols:
 ```{python eval=FALSE}
 single_logit = pd.DataFrame(data = {'Coeffcient': params, 'p-value': pvalues},
                             index = y_cols)
-single_logit['significance'] = single_logit['p-value']<=0.05
+single_logit['significance'] = (single_logit['p-value']<=0.05).map(lambda x: '√' if x else '')
 single_logit
 ```
+![](./rmd_output/python_logit.png)
+
+From the comparison of outputs from seven logistic regression model, we naively use the p-value to state the significance of variable `gender` which is our main factor of interest. We can say that gender does have an impact on four indicators of cardiovascular health, smoking, physical activity, blood glucose, and blood pressure.
+
 
 #### Linear models on the response CVH
 
@@ -78,7 +128,6 @@ single_logit
 ols = sm.OLS.from_formula(formula = 'CVH ~ gender + age + race + education + insurance', data = df).fit()
 print(ols.summary())
 ```
-
 ![](./rmd_output/python_ols.png)
 
 From the basic linear regression model above, we find all other variables are significant except for variable **"race"** with p-value=0.886.
@@ -90,10 +139,10 @@ Therefore, we adopt backward elimination based on the p-values from the regressi
 ols_elim = sm.OLS.from_formula(formula = 'CVH ~ gender + age + education + insurance', data = df).fit()
 print(ols_elim.summary())
 ```
-
 ![](./rmd_output/python_ols_elim.png)
 
 From the second regression summary above, we can see that all four variables in the model are significant and a slight decrease of AIC and BIC criterion. In additon, due to benefit of simplicity, we will adopt this model.
+
 
 #####  Linear mixed effects model
 
@@ -101,7 +150,6 @@ From the second regression summary above, we can see that all four variables in 
 mixedlm = sm.MixedLM.from_formula("CVH ~ gender + age + education + insurance", groups="age_decades", data=df).fit()
 print(mixedlm.summary())
 ```
-
 ![](./rmd_output/python_mixedlm.png)
 
 ### R
@@ -388,4 +436,13 @@ mixed cvh i.gender i.insurance c.age c.edu ||_all:R.age_factor
 ![](https://raw.githubusercontent.com/shswkw/UMStats506_GroupProject/master/gender-box.png){width=350px}
 ![](https://raw.githubusercontent.com/shswkw/UMStats506_GroupProject/master/insurance-box.png){width=350px}
 
+
+## Additional Analysis
+
 ## Results
+
+## References
+
+1. [Cardiovascular Health Among Non‐Hispanic Asian Americans: NHANES, 2011–2016](https://www.ahajournals.org/doi/10.1161/JAHA.118.011324)
+
+2. [Section Week 8 - Linear Mixed Models](https://web.stanford.edu/class/psych252/section/Mixed_models_tutorial.html) from Standford tutorials
