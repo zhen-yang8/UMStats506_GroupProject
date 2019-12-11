@@ -1,5 +1,5 @@
 ---
-title: "STATS506 Group Project"
+title: "Differences on Cardiovascular Health among Gender"
 author: Zhen Yang, Yueyang Zhang, Karen Wang
 date: "December, 2019"
 output:
@@ -412,6 +412,25 @@ So the answer to the question we brought up is yes, women tend to have a better 
 
 ### Stata
 
+#### Data Visualization
+Here is the summary on the data set after cleaning:
+We have one additional variable `age_factor` where we transformed age into a categorical variable where each decade is a level.
+[](https://raw.githubusercontent.com/shswkw/UMStats506_GroupProject/master/dataset.png){width=500px}
+
+Following are the boxplots on index variable `age`, `education`, `gender`, `insurance`:
+
+```{r boxplots, eval=FALSE}
+graph box cvh, over(gender) title("Box plot for Gender", span)
+graph box cvh, over(edu) title("Box plot for Education", span)
+graph box cvh, over(insurance) title("Box plot for Insurance", span)
+graph box cvh, over(age_factor) title("Box plot for Age", span)
+```
+![](https://raw.githubusercontent.com/shswkw/UMStats506_GroupProject/master/age-box.png){width=350px}
+![](https://raw.githubusercontent.com/shswkw/UMStats506_GroupProject/master/edu-box.png){width=350px}
+![](https://raw.githubusercontent.com/shswkw/UMStats506_GroupProject/master/gender-box.png){width=350px}
+![](https://raw.githubusercontent.com/shswkw/UMStats506_GroupProject/master/insurance-box.png){width=350px}
+
+#### Logistic Regression
 After the final dataset was cleaned, using 'logistic' command in stata to fit a logistic regression on each index variable against Gender, Education, Age, Insurance, and Race.
 ```{r logistic, eval=FALSE}
 use M:\group_project_data.dta 
@@ -424,6 +443,17 @@ logistic bmi i.gender i.edu i.age_factor i.insurance i.race
 logistic diet i.gender i.edu i.age_factor i.insurance i.race
 ```
 
+| Index Variables   | Coefficients |
+|-------------------|--------------|
+| Smoking           | -0.6821992   |
+| Blood Pressure    | -0.9460691   |
+| Physical Activity | 0.4425227    |
+| Blood Cholesterol | 0.225214     |
+| Blood Glucose     | -0.7201343   |
+| BMI               | -0.114942    |
+| Diet              | 0.0397665    |
+
+#### OLS Model
 Using Ordinary Least Squares to see the significance of each variable and fit another OLS after variable selection.
 ```{r ols, eval=FALSE}
 regress cvh gender age_factor race edu insurance 
@@ -431,25 +461,31 @@ regress cvh gender age_factor edu insurance
 ```
 ![](https://raw.githubusercontent.com/shswkw/UMStats506_GroupProject/master/ols-both%20models.png){width=500px}
 
-```{r boxplots, eval=FALSE}
-graph box cvh, over(gender) title("Box plot for Gender", span)
-graph box cvh, over(edu) title("Box plot for Education", span)
-graph box cvh, over(insurance) title("Box plot for Insurance", span)
-graph box cvh, over(age_factor) title("Box plot for Age", span)
-```
-
+#### Mixed Effect Model
+From the boxplot, we see that `age_factor` has some disparaties among different level. Thus, we took the it as our random effects with everything else as our fixed effects.
 ```{r mixed, eval=FALSE}
 mixed cvh i.gender i.insurance c.age c.edu ||_all:R.age_factor
 ```
 ![](https://raw.githubusercontent.com/shswkw/UMStats506_GroupProject/master/mixed.png){width=500px}
 
-#### Data Visualization
-![](https://raw.githubusercontent.com/shswkw/UMStats506_GroupProject/master/age-box.png){width=350px}
-![](https://raw.githubusercontent.com/shswkw/UMStats506_GroupProject/master/edu-box.png){width=350px}
-![](https://raw.githubusercontent.com/shswkw/UMStats506_GroupProject/master/gender-box.png){width=350px}
-![](https://raw.githubusercontent.com/shswkw/UMStats506_GroupProject/master/insurance-box.png){width=350px}
+
 
 ## Results
+Table: Side by Side Comparison on Coefficients of *Linear Mixed Effects Model* from All Three Languages
+
+|Coefficients/ Languages | Python | R         | Stata      |
+|------------------------|--------|-----------|------------|
+| Gender                 | -0.367 | -0.368171 | -0.358783  |
+| Age                    | -0.021 | -0.019624 | -0.0207172 |
+| Education              | 0.176  | 0.176018  | 0.1783475  |
+| Insurance              | 0.209  | 0.211245  | 0.2110812  |
+| Age (Factor)           | 0.031  | 0.04536   | 0.0424222  |
+
+In this project, we first transformed our seven index variables to binary variables in order to apply the *logistic model* and to observe the relationship between `gender` and each of them. From the boxplots and p-value, we obtained `smoking`, `physical activity`, `blood glucose`, `blood pressure` as our significant variables that `gender` has impact on. After examining the impact on each single variable, we applied *OLS model* to the CVH score which is composed by the seven indexed variables. We incoporrated variable selections by beginning as a full model and removed `race` since it has a large p-value and is not significant in our model. From the resulting OLS model with four variables, all the variables are significant and we decided to keep this model. By observing the boxplots, we implemented the *Linear Mixed Effects Model* since the boxplot of `age_group` showed us unconsistences among different levels. We took it as the random effects with everything else being fixed. This model reconfirms that `gender` is significant in our model and from the table above, we see that this entire study can be accomplished in all three of the languages and the resulting coefficients don't vary that much.
+
+From this study, `gender` is statistically highly significant, and indeed we can say that there exists differences between *Cardiovasucular Health* among different `gender`. Like one would think, there are many possible potential reasons behind it, such that female are less likely to be a smoker, male might exercise more often than female, or just simply based on different physiogolical structure. Due to the variables selected, we could only explore these much relationships in this study. It might be other potential relationships could be discovered if there are more variables included in this data set. In addition, 
+
+We took a step further by including some additional analysis, this could possibly improve the model even more, please see below.
 
 ## Additional Analysis {.tabset .tabset-fade}
 
@@ -580,7 +616,7 @@ BIC(mixed1)-BIC(OLS_opt)
 ```
 From the result above we can conclude that the random effects are significant. This is consistent with our previous result.
 
-Again, this addition analysis is just an supplement to our corn analysis. It takes weights into consideration and the corn result is consistent with our final result.  
+Again, this addition analysis is just an supplement to our core analysis. It takes weights into consideration and the corn result is consistent with our final result.  
 
 ## References
 
