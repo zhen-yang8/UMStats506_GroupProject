@@ -130,9 +130,9 @@ print(ols.summary())
 ```
 ![](./rmd_output/python_ols.png)
 
-From the basic linear regression model above, we find all other variables are significant except for variable **"race"** with p-value=0.886.
+From the basic linear regression model above, we find all other variables are significant except for variable `race` with p-value=0.886.
 
-Therefore, we adopt backward elimination based on the p-values from the regression summary above by removing variable **"race"** from our linear regression model, and we can see that our model has all variables that  are siginificant.
+Therefore, we adopt backward elimination based on the p-values from the regression summary above by removing variable `race` from our linear regression model, and we can see that our model has all variables that  are siginificant.
 
 ```{python eval=FALSE}
 # OLS with simple backward elimination - deletes 'race'
@@ -146,9 +146,9 @@ From the second regression summary above, we can see that all four variables in 
 
 #####  Linear mixed effects model
 
-When we look back to our boxplots in Data Visualization part, wan can see that there are distinct differences among the age groups while disparities among other three categorical predictors are not quite obvious. 
+When we look back to our boxplots in Data Visualization part, wan can see that there are distinct differences among the age groups and among education groups while disparities among other two categorical predictors are not quite obvious. 
 
-Therefore it is straightforward for us to consider treating grouped variable `age_decades` as a mixed effect, and then we refit the multiple linear regression model above still keeping the variable `age` as a fixed effect for the sake of goodness of fit and better predictive effect of the response mean.
+Therefore it is straightforward for us to consider treating grouped variable `age_decades` and `education `as mixed effects, and then we refit the multiple linear regression model above still keeping the variable `age` as a fixed effect for the sake of goodness of fit and better predictive effect of the response mean.
 
 ```{python eval=FALSE}
 df["group"] = 1 
