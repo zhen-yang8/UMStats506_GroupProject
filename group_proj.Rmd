@@ -162,6 +162,7 @@ Compared the mixed effect model summary to the linear regression model (`race` d
 
 ### R
 
+
 ```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
 # Loading packages needed in following steps
 library("tidyverse")
@@ -221,8 +222,8 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 
 We first process the data before fitting a model.
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
-library(MASS)
-detach("package:MASS", unload=TRUE)
+#library(MASS)
+#detach("package:MASS", unload=TRUE)
 # Load data and select variables we need and drop NA
 X<-read_xpt("https://wwwn.cdc.gov/Nchs/Nhanes/2005-2006/DEMO_D.XPT")
 X_variable<-X%>%select("SEQN","RIAGENDR","RIDAGEYR","DMDEDUC2","RIDRETH1")%>%
@@ -306,10 +307,6 @@ data<-raw_data%>%transmute(SEQN,CVH=smoking+Blood_pressure+phy_act+blood_cho+blo
 data
 ```
 #### Data Summary
-Here is a description of our data
-```{r}
-```
-
 To find out more about the relationship between variables, We also polt box plots for response variable CVH grouped by different predictors. (Here we group age variable)
 ```{r echo=FALSE}
 data$age_group=ceiling(data$age/10)-3
@@ -357,6 +354,8 @@ for (i in list(gender_smoking,gender_BP,gender_phy,gender_BC,gender_BG,gender_BM
 }
 formattable::formattable(seperate)
 ```
+\*p<0.5;\*\*p<0.01;\*\*\*p<0.001  
+
 From the output we can see that gender has significant effect on smoking, Blood_pressure, phy_act, blood_glu. Which means that female is more likely to be non-smoker, have a normal blood pressure, do less healthy physical activity and have normal blood glucose level. This is quite consistent with commen sense.
 
 Then we will treat overall CVH score as continuous variable and conduct some regression analysis to check the relationship between CVH and gender.
@@ -379,7 +378,7 @@ boxcox(OLS2,plotit=T)# 1 is in the confidence interval so no need to do transfor
 #### Mixed Effect Model 
 Back to our box plots,we can see that the CVH shows difference in different age groups. It is resasonable to establish the following mixed effect model. 
 ```{r}
-mixed=lme(CVH~gender+insurance+age+education, random=~1|education+1|age_group,  
+mixed=lme(CVH~gender+insurance+age+education, random=~1|age_group,  
          method = 'ML', data = data)
 summary(mixed)
 ```
@@ -405,8 +404,7 @@ model.fixed = gls(CVH~gender+insurance+age+education,
                   method="ML")
 anova(model.fixed,mixed)
 ```
-From the p value for likelihood ratio test and the comparision of AIC, BIC and loglik, we can conclude that the random effects are significant since this mixed model is significantly different from the OLS model. It has smaller AIC and BIC, and larger logLik. 
-
+From the p value for likelihood ratio test and the comparision of AIC, BIC and loglik, we can conclude that the random effect is significant since this mixed model is significantly different from the OLS model. It has smaller AIC and BIC, and larger logLik. 
 
 To conclude, factors related to a favorable CVH score included insurance covered, younger age, female sex, and a higher level of education.
 
