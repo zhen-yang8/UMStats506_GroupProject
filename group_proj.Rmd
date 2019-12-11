@@ -498,6 +498,7 @@ Then we analyze the relationship between gender and each indicator of CVH score 
 | blood_glu      | -0.930371413  | 9.869334e-12 | ***          |
 | BMI            | -0.345588302  | 6.075570e-03 | **           |
 | Diet           | -0.005282912  | 9.703731e-01 |              |
+\*p<0.5;\*\*p<0.01;\*\*\*p<0.001
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 data$weight_logistic=floor(data$weight/1000)+1
 gender_smoking <- summary(glm(smoking~gender+education+age+insurance+race+pir,data=data, family = "quasibinomial",weight=weight_logistic))
