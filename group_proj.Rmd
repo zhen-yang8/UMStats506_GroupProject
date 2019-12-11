@@ -56,27 +56,27 @@ Regression models are adopted in the whole analysis, which is a powerful and pop
 
 1. The first part is indicator-by-indicator logistic regression models. Since there are seven metrics for cardiovascular health, we regress each indicator (binary variable) of CVH against gender and control variables, and make a comparison of the significance of gender among these seven models.
 
-In the logistic regression model, we have the binary response variable $Y_{smoking}$, and predictor variable`gender`, `age`, `race`, `education` and `insurance`, so we fit a model of $ p_{smoking} = P(Y_{smoking}=1) $ against all five predictors, whose formula can be given as
-$$ \log\frac{p_{smoking}}{1-p_{smoking}} = \beta_0 + \beta_1 X_{gender} + \beta_2 X_{age} + \beta_3 X_{race} + \beta_4 X_{education} + \beta_5 X_{insurance} $$
+    In the logistic regression model, we have the binary response variable $Y_{smoking}$, and predictor variable`gender`, `age`, `race`, `education` and `insurance`, so we fit a model of $ p_{smoking} = P(Y_{smoking}=1) $ against all five predictors, whose formula can be given as
+    $$ \log\frac{p_{smoking}}{1-p_{smoking}} = \beta_0 + \beta_1 X_{gender} + \beta_2 X_{age} + \beta_3 X_{race} + \beta_4 X_{education} + \beta_5 X_{insurance} $$
 
-Similarly, for the other six binary response variable, the corresponding logistic formulas are
-$$ \log\frac{p_{bmi}}{1-p_{bmi}} = \beta_0 + \beta_1 X_{gender} + \beta_2 X_{age} + \beta_3 X_{race} + \beta_4 X_{education} + \beta_5 X_{insurance} $$
-$$ \log\frac{p_{physical\_activity}}{1-p_{physical\_activity}} = \beta_0 + \beta_1 X_{gender} + \beta_2 X_{age} + \beta_3 X_{race} + \beta_4 X_{education} + \beta_5 X_{insurance} $$
-$$ \log\frac{p_{diet}}{1-p_{diet}} = \beta_0 + \beta_1 X_{gender} + \beta_2 X_{age} + \beta_3 X_{race} + \beta_4 X_{education} + \beta_5 X_{insurance} $$
-$$ \log\frac{p_{blood\_cholesterol}}{1-p_{blood\_cholesterol}} = \beta_0 + \beta_1 X_{gender} + \beta_2 X_{age} + \beta_3 X_{race} + \beta_4 X_{education} + \beta_5 X_{insurance} $$
-$$ \log\frac{p_{blood\_glucose}}{1-p_{blood\_glucose}} = \beta_0 + \beta_1 X_{gender} + \beta_2 X_{age} + \beta_3 X_{race} + \beta_4 X_{education} + \beta_5 X_{insurance} $$
-$$ \log\frac{p_{blood\_pressure}}{1-p_{blood\_pressure}} = \beta_0 + \beta_1 X_{gender} + \beta_2 X_{age} + \beta_3 X_{race} + \beta_4 X_{education} + \beta_5 X_{insurance} $$
+    Similarly, for the other six binary response variable, the corresponding logistic formulas are
+    $$ \log\frac{p_{bmi}}{1-p_{bmi}} = \beta_0 + \beta_1 X_{gender} + \beta_2 X_{age} + \beta_3 X_{race} + \beta_4 X_{education} + \beta_5 X_{insurance} $$
+    $$ \log\frac{p_{physical\_activity}}{1-p_{physical\_activity}} = \beta_0 + \beta_1 X_{gender} + \beta_2 X_{age} + \beta_3 X_{race} + \beta_4 X_{education} + \beta_5 X_{insurance} $$
+    $$ \log\frac{p_{diet}}{1-p_{diet}} = \beta_0 + \beta_1 X_{gender} + \beta_2 X_{age} + \beta_3 X_{race} + \beta_4 X_{education} + \beta_5 X_{insurance} $$
+    $$ \log\frac{p_{blood\_cholesterol}}{1-p_{blood\_cholesterol}} = \beta_0 + \beta_1 X_{gender} + \beta_2 X_{age} + \beta_3 X_{race} + \beta_4 X_{education} + \beta_5 X_{insurance} $$
+    $$ \log\frac{p_{blood\_glucose}}{1-p_{blood\_glucose}} = \beta_0 + \beta_1 X_{gender} + \beta_2 X_{age} + \beta_3 X_{race} + \beta_4 X_{education} + \beta_5 X_{insurance} $$
+    $$ \log\frac{p_{blood\_pressure}}{1-p_{blood\_pressure}} = \beta_0 + \beta_1 X_{gender} + \beta_2 X_{age} + \beta_3 X_{race} + \beta_4 X_{education} + \beta_5 X_{insurance} $$
 
 
 2. The second part concerns with gender’s effect on the overall CVH scores by adopting several regression models, from multiple linear regression to linear mixed model. Precisely, we first use the ordinary least squares criterion to fit a multiple linear regression model on all predictor variables. By examining the significance of each variable, we decide to take out `race` since it has a very large p-value. After reducing to four variables, we fit the linear model again and re-examine the significance level of our variables. However, linear model is not sufficient to get the result. We decided to take a step further applying mixed linear model. In order to see the differences among groups, we drew boxplots on each of the variables after the variable selection by CVH scores.
 
-The multiple linear regression is expressed as
-$$ \text{CVH} = \beta_0 + \beta_1 X_{gender} + \beta_2 X_{age} + \beta_3 X_{race} + \beta_4 X_{education} + \beta_5 X_{insurance}  $$
-With backward elimination, the reduced linear model is
-$$ \text{CVH} = \beta_0 + \beta_1 X_{gender} + \beta_2 X_{age} + \beta_3 X_{education} + \beta_4 X_{insurance}  $$
-Linear mixed model is carried out as
-$$ \text{CVH}_j = \beta_0 + \beta_1 X_{gender} + \beta_2 X_{age} + \beta_3 X_{education} + \beta_4 X_{insurance} + \text{intercept}_j$$
-where $\text{intercept}_j$ is the random intercept for each group (random effect).
+    The multiple linear regression is expressed as
+    $$ \text{CVH} = \beta_0 + \beta_1 X_{gender} + \beta_2 X_{age} + \beta_3 X_{race} + \beta_4 X_{education} + \beta_5 X_{insurance}  $$
+    With backward elimination, the reduced linear model is
+    $$ \text{CVH} = \beta_0 + \beta_1 X_{gender} + \beta_2 X_{age} + \beta_3 X_{education} + \beta_4 X_{insurance}  $$
+    Linear mixed model is carried out as
+    $$ \text{CVH}_j = \beta_0 + \beta_1 X_{gender} + \beta_2 X_{age} + \beta_3 X_{education} + \beta_4 X_{insurance} + \text{intercept}_j$$
+    where $\text{intercept}_j$ is the random intercept for each group (random effect).
 
 The following analysis is implemented separately in three programming languages, Python, R and Stata but shares a common outline as described above.
 
@@ -146,11 +146,19 @@ From the second regression summary above, we can see that all four variables in 
 
 #####  Linear mixed effects model
 
+When we look back to our boxplots in Data Visualization part, wan can see that there are distinct differences among the age groups while disparities among other three categorical predictors are not quite obvious. 
+
+Therefore it is straightforward for us to consider treating grouped variable `age_decades` as a mixed effect, and then we refit the multiple linear regression model above still keeping the variable `age` as a fixed effect for the sake of goodness of fit and better predictive effect of the response mean.
+
 ```{python eval=FALSE}
-mixedlm = sm.MixedLM.from_formula("CVH ~ gender + age + education + insurance", groups="age_decades", data=df).fit()
+df["group"] = 1 
+vcf = {"age_decades": "0 + C(age_decades)", "education": "0 + C(education)"}
+mixedlm = sm.MixedLM.from_formula("CVH ~ gender + age + education + insurance", groups="group", vc_formula=vcf, re_formula="0", data=df).fit(reml=False)
 print(mixedlm.summary())
 ```
 ![](./rmd_output/python_mixedlm.png)
+
+Compared the mixed effect model summary to the linear regression model (`race` dropped) summary, we find that the log likelihood has increased and such outcomes are consistent with the R outputs. We conclude that a linear mixed effect model is more appropriate here and still come to the same conclusion that `gender` is significant in the regression model.
 
 ### R
 
@@ -403,9 +411,10 @@ From the p value for likelihood ratio test and the comparision of AIC, BIC and l
 To conclude, factors related to a favorable CVH score included insurance covered, younger age, female sex, and a higher level of education.
 
 So the answer to the question we brought up is yes, women tend to have a better cardiovascular health condition than men in the US. 
+
 ### Stata
 
-#### After the final dataset was cleaned, using 'logistic' command in stata to fit a logistic regression on each index variable against Gender, Education, Age, Insurance, and Race.
+After the final dataset was cleaned, using 'logistic' command in stata to fit a logistic regression on each index variable against Gender, Education, Age, Insurance, and Race.
 ```{r logistic, eval=FALSE}
 use M:\group_project_data.dta 
 logistic smoking i.gender i.edu i.age_factor i.insurance i.race 
@@ -417,7 +426,7 @@ logistic bmi i.gender i.edu i.age_factor i.insurance i.race
 logistic diet i.gender i.edu i.age_factor i.insurance i.race
 ```
 
-#### Using Ordinary Least Squares to see the significance of each variable and fit another OLS after variable selection.
+Using Ordinary Least Squares to see the significance of each variable and fit another OLS after variable selection.
 ```{r ols, eval=FALSE}
 regress cvh gender age_factor race edu insurance 
 regress cvh gender age_factor edu insurance
