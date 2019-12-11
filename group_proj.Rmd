@@ -2,7 +2,11 @@
 title: "STATS506 Group Project"
 author: Zhen Yang, Yueyang Zhang, Karen Wang
 date: "December, 2019"
-output: html_document
+output:
+  html_document:
+    toc: true
+    toc_depth: 2
+    toc_float: true
 ---
 
 ## Introduction
