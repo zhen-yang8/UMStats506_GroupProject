@@ -222,6 +222,11 @@ X_variable<-X%>%select("SEQN","RIAGENDR","RIDAGEYR","DMDEDUC2","RIDRETH1")%>%
   filter(RIDAGEYR>=20,DMDEDUC2!=7,DMDEDUC2!=9)%>%
   mutate(RIAGENDR=as.numeric(RIAGENDR==1))%>%
   transmute(SEQN,gender=RIAGENDR,age=RIDAGEYR,race=RIDRETH1,education=DMDEDUC2)
+X_variable_w<-X%>%select("SEQN","RIAGENDR","RIDAGEYR","DMDEDUC2","RIDRETH1","WTMEC2YR","INDFMPIR")%>%
+  drop_na()%>%
+  filter(RIDAGEYR>=20,DMDEDUC2!=7,DMDEDUC2!=9)%>%
+  mutate(RIAGENDR=as.numeric(RIAGENDR==1))%>%
+  transmute(SEQN,gender=RIAGENDR,age=RIDAGEYR,race=RIDRETH1,education=DMDEDUC2,pir=INDFMPIR,weight=WTMEC2YR)
 health_insurance<-read_xpt("https://wwwn.cdc.gov/Nchs/Nhanes/2005-2006/HIQ_D.XPT")
 health_insurance<-health_insurance%>%select(SEQN,HIQ011)%>%
   drop_na()%>%
@@ -314,6 +319,7 @@ p5<-qplot(factor(race), CVH,
 multiplot(p1, p2, cols=2)
 multiplot(p3, p5, cols=2)
 multiplot(p4, cols=1)
+
 ```
 
 
@@ -397,7 +403,6 @@ From the p value for likelihood ratio test and the comparision of AIC, BIC and l
 To conclude, factors related to a favorable CVH score included insurance covered, younger age, female sex, and a higher level of education.
 
 So the answer to the question we brought up is yes, women tend to have a better cardiovascular health condition than men in the US. 
-
 ### Stata
 
 #### After the final dataset was cleaned, using 'logistic' command in stata to fit a logistic regression on each index variable against Gender, Education, Age, Insurance, and Race.
@@ -437,10 +442,127 @@ mixed cvh i.gender i.insurance c.age c.edu ||_all:R.age_factor
 ![](https://raw.githubusercontent.com/shswkw/UMStats506_GroupProject/master/gender-box.png){width=350px}
 ![](https://raw.githubusercontent.com/shswkw/UMStats506_GroupProject/master/insurance-box.png){width=350px}
 
-
-## Additional Analysis
-
 ## Results
+
+## Additional Analysis {.tabset .tabset-fade}
+
+### Introduction
+For simplicity we didn't include any weights in the above study. In the additional analysis, our group repeat our analysis on weighted data. This is just an unnecessary but beneficial addition so we only use R language to achieve this part and we omit most codes and output here because they are quite similar to the above analysis. The result is consistent to our above results.
+
+### R
+We choose WTMEC2YR - Both Interviewed and MEC Examined Sample Persons here, beacause our interested variables are from both Interviewed and MEC Examined datasets. What's more, we find family poverty income ratio (PIR) also has a certain degree of impact on CVH, so we also include this variable in our model here. Our data size is 1209 now.
+```{r message=FALSE, warning=FALSE, include=FALSE}
+# merge all seperate datasets together by SEQN
+raw_data<-X_variable_w%>%inner_join(health_insurance, by = "SEQN")%>%
+  inner_join(Smoking, by = "SEQN")%>%
+  inner_join(BMI, by = "SEQN")%>%
+  inner_join(Blood_pressure, by = "SEQN")%>%
+  inner_join(Diet, by = "SEQN")%>%
+  inner_join(Physical_Activity, by = "SEQN")%>%
+  inner_join(Blood_Cholesterol, by = "SEQN")%>%
+  inner_join(Blood_Glucose, by = "SEQN")
+data<-raw_data%>%transmute(SEQN,CVH=smoking+Blood_pressure+phy_act+blood_cho+blood_glu+BMI+Diet,smoking,Blood_pressure,phy_act,blood_cho,blood_glu,BMI,Diet,gender,age,race,education,insurance,pir,weight)
+# Then we get our final version dataset
+data
+```
+
+Samely, we first exploit the data here we will show the boxplot for age_group variable. The difference between groups is still quite obvious.
+```{r message=FALSE, warning=FALSE, include=FALSE}
+data$weight=floor(data$weight)
+data$age_group=ceiling(data$age/10)-3
+data$age_group[data$age_group==-1]=0
+data$pir_group=ceiling(data$pir/1)
+data_plot=sample_n(data,600000,replace=TRUE,weight=weight)
+#(p1<-qplot(factor(gender), CVH, colour = factor(gender), geom = "boxplot", data = data_plot))
+#(p2<-qplot(factor(insurance), CVH, colour = factor(insurance), geom = "boxplot", data = data_plot))
+#(p3<-qplot(factor(education), CVH, colour = factor(education), geom = "boxplot", data = data_plot))
+#(p4<-qplot(factor(age_group), CVH, colour = factor(age_group), geom = "boxplot", data = data_plot))
+#(p5<-qplot(factor(race), CVH, colour = factor(race), geom = "boxplot", data = data_plot))
+#(p6<-qplot(factor(pir_group), CVH, colour = factor(pir_group), geom = "boxplot", data = data_plot))
+
+```
+
+```{r}
+data_plot=sample_n(data,600000,replace=TRUE,weight=weight)
+qplot(factor(age_group), CVH, colour = factor(age_group), geom = "boxplot", data = data_plot)
+```
+
+Then we analyze the relationship between gender and each indicator of CVH score using logistic model and get the following result. Compared to the model without weight, we found that this result is quite similar to the previous one. Note that now gender also has significant effect on BMI now. females tend to have normal BMI than males. 
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+data$weight_logistic=floor(data$weight/1000)+1
+gender_smoking <- summary(glm(smoking~gender+education+age+insurance+race+pir,data=data, family = "quasibinomial",weight=weight_logistic))
+gender_BP <-summary(glm(Blood_pressure~gender+education+age+insurance+race+pir,data, family = "quasibinomial",weight=weight_logistic))
+gender_phy <- summary(glm(phy_act~gender+education+age+insurance+race+pir,data, family = "quasibinomial",weight=weight_logistic))
+gender_BC <- summary(glm(blood_cho~gender+education+age+insurance+race+pir,data, family = "quasibinomial",weight=weight_logistic))
+gender_BG <- summary(glm(blood_glu~gender+education+age+insurance+race+pir,data, family = "quasibinomial",weight=weight_logistic))
+gender_BMI <- summary(glm(BMI~gender+education+age+insurance+race+pir,data, family = "quasibinomial",weight=weight_logistic))
+gender_Diet <- summary(glm(Diet~gender+education+age+insurance+race+pir,data, family = "quasibinomial",weight=weight_logistic))
+seperate<-data.frame(factor=c("smoking","Blood_pressure","phy_act","blood_cho","blood_glu","BMI","Diet"),gender_effect=rep(0,7),p_value=rep(0,7),significance=rep("*",7),stringsAsFactors = FALSE)
+j=1
+for (i in list(gender_smoking,gender_BP,gender_phy,gender_BC,gender_BG,gender_BMI,gender_Diet)){
+  seperate$gender_effect[j]=i$coefficients[2,1]
+  seperate$p_value[j]=i$coefficients[2,4]
+  p=rank(c(i$coefficients[2,4],0.001,0.01,0.05,0.1))[1]
+  seperate$significance[j]=switch(p,
+                                  "***",
+                                  "**",
+                                  "*",
+                                  ".",
+                                  " ")
+  j=j+1
+}
+formattable::formattable(seperate)
+```
+
+Then we treat overall CVH score as continuous variable and conduct OLS regression. We find the optimal OLS model is CVH~gender+education+age+pir and the result is as follows. (Note, we also conduct full model, stepwise selection and boxcox. For brevity we omit the process.)
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+# OLS_full<-lm(CVH~gender+race+education+insurance+age+pir,data,weights = weight)
+# summary(OLS_full)
+# R square is still quite small but anyway this model is better than null model based on F test.
+#OLS_opt<-lm(CVH~gender+education+age+pir,data,weights = weight)
+#summary(OLS_opt)
+#OLS2<-lm(CVH+1~gender+education+pir+age,data,weights = weight)
+#library(MASS)
+#boxcox(OLS2,plotit=T)# 1 is in the confidence interval so no need to do transformation
+#dat=data.frame(fitted.values=as.vector(OLS_opt$fitted),residuals=as.vector(OLS_opt$residuals))
+#ggplot(data=dat,aes(x=fitted.values,y=residuals))+geom_point(color="red",alpha=0.1)+geom_smooth(se=T)
+```
+```{r echo=TRUE}
+OLS_opt<-lm(CVH~gender+education+age+pir,data,weights = weight)
+summary(OLS_opt)
+```
+
+
+
+Then we fit the mixed effect model which treat age_group as random effect and test whether random effect is warranted:
+```{r message=FALSE, warning=FALSE}
+data$rescale_weight=data$weight/sum(data$weight)
+mixed1=lmer(CVH~gender+age+education+pir+(1|age_group), data= data,weights=rescale_weight,REML=F)
+summary(mixed1)
+```
+
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+Anova(mixed1)
+dat=data.frame(fitted.values=as.vector(fitted(mixed1)),residuals=as.vector(residuals(mixed1)))
+ggplot(data=dat,aes(x=fitted.values,y=residuals))+geom_point(color="red",alpha=0.1)+geom_smooth(se=T)
+```
+
+```{r echo=TRUE}
+# lm.test
+dev1 = -2*logLik(mixed1);dev0 = -2*logLik(OLS_opt)
+devdiff = as.numeric(dev0-dev1)
+dfdiff <- attr(dev1,"df")-attr(dev0,"df"); 
+cat('Chi-square =', devdiff, '(df=', dfdiff,'), p =', 
+    pchisq(devdiff,dfdiff,lower.tail=FALSE))
+```
+We also compare the AIC and BIC between the mixed model and optinal OLS model. we get the value of AIC(mixed1)-AIC(OLS_opt) and BIC(mixed1)-BIC(OLS_opt):
+```{r}
+AIC(mixed1)-AIC(OLS_opt)
+BIC(mixed1)-BIC(OLS_opt)
+```
+From the result above we can conclude that the random effects are significant. This is consistent with our previous result.
+
+Again, this addition analysis is just an supplement to our corn analysis. It takes weights into consideration and the corn result is consistent with our final result.  
 
 ## References
 
