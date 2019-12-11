@@ -101,16 +101,14 @@ For the predictor variables, we create boxplots for each of the categorical vari
 df.exog = sm.add_constant(df[["gender", "age", "race", "education", "insurance"]])
 params = []; pvalues = []
 for col in y_cols:
-    glm = sm.GLM(df[col], df.exog,  
-                 family = sm.families.Binomial()).fit()
+    glm = sm.GLM(df[col], df.exog, family = sm.families.Binomial()).fit()
     #print(glm.summary())
     params.append(glm.params['gender'])
     pvalues.append(glm.pvalues['gender'])
 ```
 
 ```{python eval=FALSE}
-single_logit = pd.DataFrame(data = {'Coeffcient': params, 'p-value': pvalues},
-                            index = y_cols)
+single_logit = pd.DataFrame(data = {'Coeffcient': params, 'p-value': pvalues}, index = y_cols)
 single_logit['significance'] = (single_logit['p-value']<=0.05).map(lambda x: '√' if x else '')
 single_logit
 ```
@@ -146,14 +144,12 @@ From the second regression summary above, we can see that all four variables in 
 
 #####  Linear mixed effects model
 
-When we look back to our boxplots in Data Visualization part, wan can see that there are distinct differences among the age groups and among education groups while disparities among other two categorical predictors are not quite obvious. 
+When we look back to our boxplots in *Data Visualization* part, wan can see that there are distinct differences among the age groups while disparities among other three categorical predictors are not quite obvious. 
 
-Therefore it is straightforward for us to consider treating grouped variable `age_decades` and `education `as mixed effects, and then we refit the multiple linear regression model above still keeping the variable `age` as a fixed effect for the sake of goodness of fit and better predictive effect of the response mean.
+Therefore it is straightforward for us to consider treating grouped variable `age_decades` as the mixed effect, and then we refit the multiple linear regression model above still keeping the variable `age` as a fixed effect for the sake of goodness of fit and better predictive effect of the response mean.
 
 ```{python eval=FALSE}
-df["group"] = 1 
-vcf = {"age_decades": "0 + C(age_decades)", "education": "0 + C(education)"}
-mixedlm = sm.MixedLM.from_formula("CVH ~ gender + age + education + insurance", groups="group", vc_formula=vcf, re_formula="0", data=df).fit(reml=False)
+mixedlm = sm.MixedLM.from_formula("CVH ~ gender + age + education + insurance", groups="age_decades", data=df).fit(reml=False)
 print(mixedlm.summary())
 ```
 ![](./rmd_output/python_mixedlm.png)
