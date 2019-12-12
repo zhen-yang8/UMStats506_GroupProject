@@ -73,15 +73,20 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 
 We first process the data before fitting a model.
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-#library(MASS)
-#detach("package:MASS", unload=TRUE)
+# If there is warning about "no select function", then run the following command.This problem is caused by MASS.
+# detach("package:MASS", unload=TRUE)
+
 # Load data and select variables we need and drop NA
 X<-read_xpt("https://wwwn.cdc.gov/Nchs/Nhanes/2005-2006/DEMO_D.XPT")
+
+# We only study those older than 20.
 X_variable<-X%>%select("SEQN","RIAGENDR","RIDAGEYR","DMDEDUC2","RIDRETH1")%>%
   drop_na()%>%
   filter(RIDAGEYR>=20,DMDEDUC2!=7,DMDEDUC2!=9)%>%
   mutate(RIAGENDR=as.numeric(RIAGENDR==1))%>%
   transmute(SEQN,gender=RIAGENDR,age=RIDAGEYR,race=RIDRETH1,education=DMDEDUC2)
+
+# This X_variable_w contains weights and will be used in additional analysis.
 X_variable_w<-X%>%select("SEQN","RIAGENDR","RIDAGEYR","DMDEDUC2","RIDRETH1","WTMEC2YR","INDFMPIR")%>%
   drop_na()%>%
   filter(RIDAGEYR>=20,DMDEDUC2!=7,DMDEDUC2!=9)%>%
@@ -101,6 +106,8 @@ Smoking<-Smoking%>%
   mutate(smoking=as.numeric(SMQ020!=1))%>%
   select(SEQN,smoking)
 BMI<-read_xpt("https://wwwn.cdc.gov/Nchs/Nhanes/2005-2006/BMX_D.XPT")
+
+# We treat thoes BMI between 18.5 and 24.9 as normal
 BMI<-BMI%>%select(SEQN,BMXBMI)%>%
   drop_na()%>%
   mutate(BMI=as.numeric(BMXBMI>=18.5&BMXBMI<=24.9))%>%
@@ -217,11 +224,16 @@ Then we will treat overall CVH score as continuous variable and conduct some reg
 #### Fitting an OLS model
 We first begin with OLS full model. It is obvious that race is insignificant and we choose to delete this variable. The Box-Cox plot suggests no transformation needed for response. 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
+# race is not significant in the full model.
 OLS_full<-lm(CVH~gender+race+education+insurance+age,data)
 summary(OLS_full)
+
+# delete race variable and get the optimal OLS mode'. 
 # R square is still quite small but anyway this model is better than null model based on F test.
 OLS_opt<-lm(CVH~gender+education+insurance+age,data)
 summary(OLS_opt)
+
+# do boxcox to test if CVH need to be transformed
 OLS2<-lm(CVH+1~gender+education+insurance+age,data)
 library(MASS)
 boxcox(OLS2,plotit=T)# 1 is in the confidence interval so no need to do transformation
@@ -256,6 +268,7 @@ We test the random effects in the model by comparing the model to a model fitted
 model.fixed = gls(CVH~gender+insurance+age+education,
                   data=data,
                   method="ML")
+# compare the AIC, BIC and loglik                  
 anova(model.fixed,mixed)
 ```
 From the p value for likelihood ratio test and the comparision of AIC, BIC and loglik, we can conclude that the random effect is significant since this mixed model is significantly different from the OLS model. It has smaller AIC and BIC, and larger logLik. (Though the degree of improvement is not large.)
