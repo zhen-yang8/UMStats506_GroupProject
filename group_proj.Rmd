@@ -420,6 +420,7 @@ We have one additional variable `age_factor` where we transformed age into a cat
 Following are the boxplots on index variable `age`, `education`, `gender`, `insurance`:
 
 ```{r boxplots, eval=FALSE}
+//graphing the box plots
 graph box cvh, over(gender) title("Box plot for Gender", span)
 graph box cvh, over(edu) title("Box plot for Education", span)
 graph box cvh, over(insurance) title("Box plot for Insurance", span)
@@ -431,9 +432,9 @@ graph box cvh, over(age_factor) title("Box plot for Age", span)
 ![](https://raw.githubusercontent.com/shswkw/UMStats506_GroupProject/master/insurance-box.png){width=350px}
 
 #### Logistic Regression
-After the final dataset was cleaned, using 'logistic' command in stata to fit a logistic regression on each index variable against Gender, Education, Age, Insurance, and Race.
+After the final dataset was cleaned, using 'logit' command in stata to fit a logistic regression on each index variable against Gender, Education, Age, Insurance, and Race.
 ```{r logistic, eval=FALSE}
-//using saved dataset and apply logistic regression on index variables
+//using saved dataset and apply logistic regression on index variables by using logit command
 use M:\group_project_data.dta 
 logit smoking i.gender i.edu i.age_factor i.insurance i.race 
 logit bp i.gender i.edu i.age_factor i.insurance i.race 
@@ -459,7 +460,7 @@ From the p-value, we found out that gender has impact on health, 'smoking', 'phy
 Using Ordinary Least Squares to see the significance of each variable and fit another OLS after variable selection.
 We used backward elimination to remove 'race' to obtain a new model.
 ```{r ols, eval=FALSE}
-//implemnting OLS model
+//implemnting OLS model by using regress command
 regress cvh gender age_factor race edu insurance 
 regress cvh gender age_factor edu insurance
 ```
@@ -469,7 +470,7 @@ regress cvh gender age_factor edu insurance
 From the boxplot, we see that `age_factor` has some disparaties among different level. Thus, we took the it as our random effects with everything else as our fixed effects.
 Looking at the p-value, the model reconfirms that gender is significant in relating to cardiovascular health.
 ```{r mixed, eval=FALSE}
-//Mixed Linear Model
+//Mixed Linear Model using mixed command and age in levels is our random effects
 mixed cvh i.gender i.insurance c.age c.edu ||_all:R.age_factor
 ```
 ![](https://raw.githubusercontent.com/shswkw/UMStats506_GroupProject/master/mixed.png){width=500px}
