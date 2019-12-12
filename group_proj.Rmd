@@ -60,7 +60,7 @@ Regression models are adopted in the whole analysis, which is a powerful and pop
 
 1. The first part is indicator-by-indicator logistic regression models. Since there are seven metrics for cardiovascular health, we regress each indicator (binary variable) of CVH against gender and control variables, and make a comparison of the significance of gender among these seven models.
 
-    In the logistic regression model, we have the binary response variable $Y_{smoking}$, and predictor variable`gender`, `age`, `race`, `education` and `insurance`, so we fit a model of $ p_{smoking} = P(Y_{smoking}=1) $ against all five predictors, whose formula can be given as
+    In the logistic regression model, we have the binary response variable $Y_{smoking}$, and predictor variable`gender`, `age`, `race`, `education` and `insurance`, so we fit a model of $p_{smoking} = P(Y_{smoking}=1)$ against all five predictors, whose formula can be given as
     $$ \log\frac{p_{smoking}}{1-p_{smoking}} = \beta_0 + \beta_1 X_{gender} + \beta_2 X_{age} + \beta_3 X_{race} + \beta_4 X_{education} + \beta_5 X_{insurance} $$
 
     Similarly, for the other six binary response variable, the corresponding logistic formulas are
@@ -483,9 +483,9 @@ Table: Side by Side Comparison on Coefficients of *Linear Mixed Effects Model* f
 
 In this project, we first transformed our seven index variables to binary variables in order to apply the *logistic model* and to observe the relationship between `gender` and each of them. From the boxplots and p-value, we obtained `smoking`, `physical activity`, `blood glucose`, `blood pressure` as our significant variables that `gender` has impact on. After examining the impact on each single variable, we applied *OLS model* to the CVH score which is composed by the seven indexed variables. We incoporrated variable selections by beginning as a full model and removed `race` since it has a large p-value and is not significant in our model. From the resulting OLS model with four variables, all the variables are significant and we decided to keep this model. By observing the boxplots, we implemented the *Linear Mixed Effects Model* since the boxplot of `age_group` showed us unconsistences among different levels. We took it as the random effects with everything else being fixed. This model reconfirms that `gender` is significant in our model and from the table above, we see that this entire study can be accomplished in all three of the languages and the resulting coefficients don't vary that much.
 
-From this study, `gender` is statistically highly significant, and indeed we can say that there exists differences between *Cardiovasucular Health* among different `gender`. Like one would think, there are many possible potential reasons behind it, such that female are less likely to be a smoker, male might exercise more often than female, or just simply based on different physiogolical structure. Due to the variables selected, we could only explore these much relationships in this study. It might be other potential relationships could be discovered if there are more variables included in this data set. In addition, 
+From this study, `gender` is statistically highly significant, and indeed we can say that there exists differences between *Cardiovasucular Health* among different `gender`. Like one would think, there are many possible potential reasons behind it, such that female are less likely to be a smoker, male might exercise more often than female, or just simply based on different physiogolical structure. Due to the variables selected, we could only explore these much relationships in this study. It might be other potential relationships could be discovered if there are more variables included in this data set.  
 
-We took a step further by including some additional analysis, this could possibly improve the model even more, please see below.
+In addition, we took a step further by including some additional analysis, this could possibly improve the model even more, please see below.
 
 ## Additional Analysis {.tabset .tabset-fade}
 
