@@ -2078,36 +2078,31 @@ mixed cvh i.gender i.insurance c.age c.edu ||_all:R.age_factor</code></pre>
 <tbody>
 <tr class="odd">
 <td>Gender</td>
-<td>-0.367</td>
-<td>-0.368171</td>
-<td>-0.358783</td>
+<td>-0.367(***)</td>
+<td>-0.368171(***)</td>
+<td>-0.358783(***)</td>
 </tr>
 <tr class="even">
 <td>Age</td>
-<td>-0.021</td>
-<td>-0.019624</td>
-<td>-0.0207172</td>
+<td>-0.021(***)</td>
+<td>-0.019624(***)</td>
+<td>-0.0207172(***)</td>
 </tr>
 <tr class="odd">
 <td>Education</td>
-<td>0.176</td>
-<td>0.176018</td>
-<td>0.1783475</td>
+<td>0.176(***)</td>
+<td>0.176018(***)</td>
+<td>0.1783475(***)</td>
 </tr>
 <tr class="even">
 <td>Insurance</td>
-<td>0.209</td>
-<td>0.211245</td>
-<td>0.2110812</td>
-</tr>
-<tr class="odd">
-<td>Age (Factor)</td>
-<td>0.031</td>
-<td>0.04536</td>
-<td>0.0424222</td>
+<td>0.209(*)</td>
+<td>0.211245(*)</td>
+<td>0.2110812(*)</td>
 </tr>
 </tbody>
 </table>
+<p>*p&lt;0.5;**p&lt;0.01;***p&lt;0.001</p>
 <p>In this project, we first transformed our seven index variables to binary variables in order to apply the <em>logistic model</em> and to observe the relationship between <code>gender</code> and each of them. From the boxplots and p-value, we obtained <code>smoking</code>, <code>physical activity</code>, <code>blood glucose</code>, <code>blood pressure</code> as our significant variables that <code>gender</code> has impact on. After examining the impact on each single variable, we applied <em>OLS model</em> to the CVH score which is composed by the seven indexed variables. We incoporrated variable selections by beginning as a full model and removed <code>race</code> since it has a large p-value and is not significant in our model. From the resulting OLS model with four variables, all the variables are significant and we decided to keep this model. By observing the boxplots, we implemented the <em>Linear Mixed Effects Model</em> since the boxplot of <code>age_group</code> showed us unconsistences among different levels. We took it as the random effects with everything else being fixed. This model reconfirms that <code>gender</code> is significant in our model and from the table above, we see that this entire study can be accomplished in all three of the languages and the resulting coefficients don’t vary that much.</p>
 <p>From this study, <code>gender</code> is statistically highly significant, and indeed we can say that there exists differences between <em>Cardiovasucular Health</em> among different <code>gender</code>. Like one would think, there are many possible potential reasons behind it, such that female are less likely to be a smoker, male might exercise more often than female, or just simply based on different physiogolical structure. Due to the variables selected, we could only explore these much relationships in this study. It might be other potential relationships could be discovered if there are more variables included in this data set.</p>
 <p>In addition, we took a step further by including some additional analysis, this could possibly improve the model even more, please see below.</p>

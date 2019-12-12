@@ -481,11 +481,12 @@ Table: Side by Side Comparison on Coefficients of *Linear Mixed Effects Model* f
 
 |Coefficients/ Languages | Python | R         | Stata      |
 |------------------------|--------|-----------|------------|
-| Gender                 | -0.367 | -0.368171 | -0.358783  |
-| Age                    | -0.021 | -0.019624 | -0.0207172 |
-| Education              | 0.176  | 0.176018  | 0.1783475  |
-| Insurance              | 0.209  | 0.211245  | 0.2110812  |
-| Age (Factor)           | 0.031  | 0.04536   | 0.0424222  |
+| Gender                 | -0.367(\*\*\*) | -0.368171(\*\*\*) | -0.358783(\*\*\*)  |
+| Age                    | -0.021(\*\*\*) | -0.019624(\*\*\*) | -0.0207172(\*\*\*) |
+| Education              | 0.176(\*\*\*)  | 0.176018(\*\*\*)  | 0.1783475(\*\*\*)  |
+| Insurance              | 0.209(\*)  | 0.211245(\*)  | 0.2110812(\*)  |
+
+\*p<0.5;\*\*p<0.01;\*\*\*p<0.001  
 
 In this project, we first transformed our seven index variables to binary variables in order to apply the *logistic model* and to observe the relationship between `gender` and each of them. From the boxplots and p-value, we obtained `smoking`, `physical activity`, `blood glucose`, `blood pressure` as our significant variables that `gender` has impact on. After examining the impact on each single variable, we applied *OLS model* to the CVH score which is composed by the seven indexed variables. We incoporrated variable selections by beginning as a full model and removed `race` since it has a large p-value and is not significant in our model. From the resulting OLS model with four variables, all the variables are significant and we decided to keep this model. By observing the boxplots, we implemented the *Linear Mixed Effects Model* since the boxplot of `age_group` showed us unconsistences among different levels. We took it as the random effects with everything else being fixed. This model reconfirms that `gender` is significant in our model and from the table above, we see that this entire study can be accomplished in all three of the languages and the resulting coefficients don't vary that much.
 
