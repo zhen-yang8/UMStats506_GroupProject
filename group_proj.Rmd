@@ -307,6 +307,10 @@ data<-raw_data%>%transmute(SEQN,CVH=smoking+Blood_pressure+phy_act+blood_cho+blo
 data
 ```
 #### Data Summary
+This is the summary of our main variables:
+```{r warning=FALSE}
+summary(data%>%select(CVH,gender,age,insurance,race,education))
+```
 To find out more about the relationship between variables, We also polt box plots for response variable CVH grouped by different predictors. (Here we group age variable)
 ```{r echo=FALSE}
 data$age_group=ceiling(data$age/10)-3
@@ -321,16 +325,14 @@ p4<-qplot(factor(age_group), CVH,
       colour = factor(age_group), geom = "boxplot", data = data)
 p5<-qplot(factor(race), CVH, 
       colour = factor(race), geom = "boxplot", data = data)
-multiplot(p1, p2, cols=2)
-multiplot(p3, p5, cols=2)
-multiplot(p4, cols=1)
-
+multiplot(p1, p3, cols=2)
+multiplot(p2, p4, cols=2)
 ```
 
 
 #### Logistic Regression on each indicator seperately
 First we analyze the relationship between gender and each indicator of CVH score using logistic model.
-```{r message=FALSE, warning=FALSE}
+```{r echo=FALSE, message=FALSE, warning=FALSE}
 gender_smoking <- summary(glm(smoking~gender+education+age+insurance+race,data=data, family = "binomial"))
 gender_BP <-summary(glm(Blood_pressure~gender+education+age+insurance+race,data, family = "binomial"))
 gender_phy <- summary(glm(phy_act~gender+education+age+insurance+race,data, family = "binomial"))
