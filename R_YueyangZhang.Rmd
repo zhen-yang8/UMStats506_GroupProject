@@ -1,15 +1,20 @@
 ---
-title: "Group_Project"
+title: "Group_Project_R_YueyangZhang"
 author: "Yueyang Zhang"
-date: "2019.12.4"
+date: "2019/12/11"
 output: html_document
 ---
+**This is the R language part of Group Project (Group 7)  
+Scripted by YueyangZhang.  
+Group members include Zhen Yang, Yueyang Zhang, Karen Wang.  
+The subject we study is "Differences on Cardiovascular Health among Gender"**  
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+### Core analysis
+```{r message=FALSE, warning=FALSE, paged.print=FALSE}
 # Loading packages needed in following steps
 library("tidyverse")
 library(haven)
@@ -24,7 +29,6 @@ library(reshape2)
 library(lmerTest)
 library(car)
 library(nlme)
-
 multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
   ## A function used to plot several plots on the same page.
   ## found this func from internet
@@ -68,9 +72,9 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 ```
 
 We first process the data before fitting a model.
-```{r echo=FALSE, message=FALSE, warning=FALSE}
-library(MASS)
-detach("package:MASS", unload=TRUE)
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+#library(MASS)
+#detach("package:MASS", unload=TRUE)
 # Load data and select variables we need and drop NA
 X<-read_xpt("https://wwwn.cdc.gov/Nchs/Nhanes/2005-2006/DEMO_D.XPT")
 X_variable<-X%>%select("SEQN","RIAGENDR","RIDAGEYR","DMDEDUC2","RIDRETH1")%>%
@@ -78,14 +82,17 @@ X_variable<-X%>%select("SEQN","RIAGENDR","RIDAGEYR","DMDEDUC2","RIDRETH1")%>%
   filter(RIDAGEYR>=20,DMDEDUC2!=7,DMDEDUC2!=9)%>%
   mutate(RIAGENDR=as.numeric(RIAGENDR==1))%>%
   transmute(SEQN,gender=RIAGENDR,age=RIDAGEYR,race=RIDRETH1,education=DMDEDUC2)
-
+X_variable_w<-X%>%select("SEQN","RIAGENDR","RIDAGEYR","DMDEDUC2","RIDRETH1","WTMEC2YR","INDFMPIR")%>%
+  drop_na()%>%
+  filter(RIDAGEYR>=20,DMDEDUC2!=7,DMDEDUC2!=9)%>%
+  mutate(RIAGENDR=as.numeric(RIAGENDR==1))%>%
+  transmute(SEQN,gender=RIAGENDR,age=RIDAGEYR,race=RIDRETH1,education=DMDEDUC2,pir=INDFMPIR,weight=WTMEC2YR)
 health_insurance<-read_xpt("https://wwwn.cdc.gov/Nchs/Nhanes/2005-2006/HIQ_D.XPT")
 health_insurance<-health_insurance%>%select(SEQN,HIQ011)%>%
   drop_na()%>%
   filter(HIQ011!=7,HIQ011!=9)%>%
   mutate(insurance=as.numeric(HIQ011==1))%>%
   select(SEQN,insurance)
-
 Smoking<-read_xpt("https://wwwn.cdc.gov/Nchs/Nhanes/2005-2006/SMQ_D.XPT")
 Smoking<-Smoking%>%
   select(SEQN,SMQ020)%>%
@@ -93,13 +100,11 @@ Smoking<-Smoking%>%
   filter(SMQ020<7)%>%
   mutate(smoking=as.numeric(SMQ020!=1))%>%
   select(SEQN,smoking)
-
 BMI<-read_xpt("https://wwwn.cdc.gov/Nchs/Nhanes/2005-2006/BMX_D.XPT")
 BMI<-BMI%>%select(SEQN,BMXBMI)%>%
   drop_na()%>%
   mutate(BMI=as.numeric(BMXBMI>=18.5&BMXBMI<=24.9))%>%
   select(SEQN,BMI)
-
 Blood_pressure<-read_xpt("https://wwwn.cdc.gov/Nchs/Nhanes/2005-2006/BPX_D.XPT")
 Blood_pressure<-Blood_pressure%>%select(SEQN,BPXSY1,BPXSY2,BPXSY3,BPXDI1,BPXDI2,BPXDI3)%>%
   gather(condition, BPX, BPXSY1:BPXDI3)%>%
@@ -111,19 +116,16 @@ Blood_pressure<-Blood_pressure%>%select(SEQN,BPXSY1,BPXSY2,BPXSY3,BPXDI1,BPXDI2,
   drop_na()%>%
   filter(BPXDI!=0,BPXSY!=0)%>%
   transmute(SEQN,Blood_pressure=as.numeric((BPXDI<80)&(BPXSY<120)))
-
 Diet_raw<-read_xpt("https://wwwn.cdc.gov/Nchs/Nhanes/2005-2006/DBQ_D.XPT")
 Diet<-Diet_raw%>%select(SEQN,DBQ700)%>%
   drop_na()%>%
   filter(DBQ700!=7,DBQ700!=9)%>%
   transmute(SEQN,Diet=as.numeric(DBQ700<=3))
-
 Diet_alt<-Diet_raw%>%
   select(SEQN,DBQ780)%>%
   drop_na()%>%
   filter(DBQ780!=77,DBQ780!=99)%>%
   transmute(SEQN,Diet=as.numeric(DBQ780<=4))
-
 Physical_Activity<-read_xpt("https://wwwn.cdc.gov/Nchs/Nhanes/2005-2006/PAQIAF_D.XPT")
 Physical_Activity<-Physical_Activity%>%
   select(SEQN,PADLEVEL,PADTIMES,PADDURAT)%>%
@@ -132,19 +134,16 @@ Physical_Activity<-Physical_Activity%>%
   group_by(SEQN)%>%
   summarise(phy_act=as.numeric(sum(times)>=600))%>%
   select(SEQN,phy_act)
-
 Blood_Cholesterol<-read_xpt("https://wwwn.cdc.gov/Nchs/Nhanes/2005-2006/TCHOL_D.XPT")
 Blood_Cholesterol<-Blood_Cholesterol%>%
   select(SEQN,LBXTC)%>%
   drop_na()%>%
   transmute(SEQN,blood_cho=as.numeric(LBXTC<200))
-
 Blood_Glucose<-read_xpt("https://wwwn.cdc.gov/Nchs/Nhanes/2005-2006/GLU_D.XPT")
 Blood_Glucose<-Blood_Glucose%>%
   select(SEQN,LBXGLU)%>%
   drop_na()%>%
   transmute(SEQN,blood_glu=as.numeric(LBXGLU<=100))
-
 # merge all seperate datasets together by SEQN
 raw_data<-X_variable%>%inner_join(health_insurance, by = "SEQN")%>%
   inner_join(Smoking, by = "SEQN")%>%
@@ -154,23 +153,20 @@ raw_data<-X_variable%>%inner_join(health_insurance, by = "SEQN")%>%
   inner_join(Physical_Activity, by = "SEQN")%>%
   inner_join(Blood_Cholesterol, by = "SEQN")%>%
   inner_join(Blood_Glucose, by = "SEQN")
-
 data<-raw_data%>%transmute(SEQN,CVH=smoking+Blood_pressure+phy_act+blood_cho+blood_glu+BMI+Diet,smoking,Blood_pressure,phy_act,blood_cho,blood_glu,BMI,Diet,gender,age,race,education,insurance)
-
 # Then we get our final version dataset
 data
 ```
-**Data Summary**  
-Here is a description of our data
-```{r}
-
+#### Data Summary
+This is the summary of our main variables:
+```{r warning=FALSE}
+summary(data%>%select(CVH,gender,age,insurance,race,education))
 ```
 
 To find out more about the relationship between variables, We also polt box plots for response variable CVH grouped by different predictors. (Here we group age variable)
-```{r echo=FALSE}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 data$age_group=ceiling(data$age/10)-3
 data$age_group[data$age_group==-1]=0
-
 p1<-qplot(factor(gender), CVH, 
       colour = factor(gender), geom = "boxplot", data = data)
 p2<-qplot(factor(insurance), CVH, 
@@ -181,24 +177,21 @@ p4<-qplot(factor(age_group), CVH,
       colour = factor(age_group), geom = "boxplot", data = data)
 p5<-qplot(factor(race), CVH, 
       colour = factor(race), geom = "boxplot", data = data)
-
-multiplot(p1, p2, cols=2)
-multiplot(p3, p5, cols=2)
-multiplot(p4, cols=1)
+multiplot(p1, p3, cols=2)
+multiplot(p2, p4, cols=2)
 ```
 
 
-**Logistic Regression on each indicator seperately**  
+#### Logistic Regression on each indicator seperately
 First we analyze the relationship between gender and each indicator of CVH score using logistic model.
-```{r message=FALSE, warning=FALSE}
-gender_smoking <- summary(glm(smoking~gender+education+age+insurance+race,data=data, family = "binomial"))
-gender_BP <-summary(glm(Blood_pressure~gender+education+age+insurance+race,data, family = "binomial"))
-gender_phy <- summary(glm(phy_act~gender+education+age+insurance+race,data, family = "binomial"))
-gender_BC <- summary(glm(blood_cho~gender+education+age+insurance+race,data, family = "binomial"))
-gender_BG <- summary(glm(blood_glu~gender+education+age+insurance+race,data, family = "binomial"))
-gender_BMI <- summary(glm(BMI~gender+education+age+insurance+race,data, family = "binomial"))
-gender_Diet <- summary(glm(Diet~gender+education+age+insurance+race,data, family = "binomial"))
-
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+gender_smoking<-summary(glm(smoking~gender+education+age+insurance+race,data=data,family = "binomial"))
+gender_BP<-summary(glm(Blood_pressure~gender+education+age+insurance+race,data, family = "binomial"))
+gender_phy<-summary(glm(phy_act~gender+education+age+insurance+race,data, family = "binomial"))
+gender_BC<-summary(glm(blood_cho~gender+education+age+insurance+race,data, family = "binomial"))
+gender_BG<-summary(glm(blood_glu~gender+education+age+insurance+race,data, family = "binomial"))
+gender_BMI<-summary(glm(BMI~gender+education+age+insurance+race,data, family = "binomial"))
+gender_Diet<-summary(glm(Diet~gender+education+age+insurance+race,data, family = "binomial"))
 seperate<-data.frame(factor=c("smoking","Blood_pressure","phy_act","blood_cho","blood_glu","BMI","Diet"),gender_effect=rep(0,7),p_value=rep(0,7),significance=rep("*",7),stringsAsFactors = FALSE)
 j=1
 for (i in list(gender_smoking,gender_BP,gender_phy,gender_BC,gender_BG,gender_BMI,gender_Diet)){
@@ -213,48 +206,44 @@ for (i in list(gender_smoking,gender_BP,gender_phy,gender_BC,gender_BG,gender_BM
                                   " ")
   j=j+1
 }
-
 formattable::formattable(seperate)
 ```
+\*p<0.5;\*\*p<0.01;\*\*\*p<0.001  
+
 From the output we can see that gender has significant effect on smoking, Blood_pressure, phy_act, blood_glu. Which means that female is more likely to be non-smoker, have a normal blood pressure, do less healthy physical activity and have normal blood glucose level. This is quite consistent with commen sense.
 
 Then we will treat overall CVH score as continuous variable and conduct some regression analysis to check the relationship between CVH and gender.
 
-**Fitting an OLS model**  
+#### Fitting an OLS model
 We first begin with OLS full model. It is obvious that race is insignificant and we choose to delete this variable. The Box-Cox plot suggests no transformation needed for response. 
-```{r message=FALSE, warning=FALSE}
+```{r echo=TRUE, message=FALSE, warning=FALSE}
 OLS_full<-lm(CVH~gender+race+education+insurance+age,data)
 summary(OLS_full)
-
 # R square is still quite small but anyway this model is better than null model based on F test.
 OLS_opt<-lm(CVH~gender+education+insurance+age,data)
 summary(OLS_opt)
-
 OLS2<-lm(CVH+1~gender+education+insurance+age,data)
 library(MASS)
 boxcox(OLS2,plotit=T)# 1 is in the confidence interval so no need to do transformation
-
 #dat=data.frame(fitted.values=as.vector(OLS_opt$fitted),residuals=as.vector(OLS_opt$residuals))
 #ggplot(data=dat,aes(x=fitted.values,y=residuals))+geom_point(color="red",alpha=0.1)+geom_smooth(se=T)
 ```
 
-**Mixed Effect Model**  
+#### Mixed Effect Model 
 Back to our box plots,we can see that the CVH shows difference in different age groups. It is resasonable to establish the following mixed effect model. 
 ```{r}
-mixed=lme(CVH~gender+insurance+age+education, random=~1|education+1|age_group,  
+mixed=lme(CVH~gender+insurance+age+education, random=~1|age_group,  
          method = 'ML', data = data)
-
 summary(mixed)
 ```
 Conduct Analysis of Variance and we find this model significant. We draw the residuals-fitted plot. The line looks flat, the residuals and fitted values seems to be less irrelevant compared to the OLS model. Then we test whether random effects are warranted:
 ```{r message=FALSE, warning=FALSE}
 Anova(mixed)
-
 dat=data.frame(fitted.values=as.vector(fitted(mixed)),residuals=as.vector(residuals(mixed)))
 ggplot(data=dat,aes(x=fitted.values,y=residuals))+geom_point(color="red",alpha=0.1)+geom_smooth(se=T)
 ```
 
-```{r eval=FALSE, include=FALSE}
+```{r echo=TRUE}
 # lm.test
 dev1 = -2*logLik(mixed);dev0 = -2*logLik(OLS_opt)
 devdiff = as.numeric(dev0-dev1)
@@ -269,9 +258,126 @@ model.fixed = gls(CVH~gender+insurance+age+education,
                   method="ML")
 anova(model.fixed,mixed)
 ```
-From the p value for likelihood ratio test and the comparision of AIC, BIC and loglik, we can conclude that the random effects are significant since this mixed model is significantly different from the OLS model. It has smaller AIC and BIC, and larger logLik. 
+From the p value for likelihood ratio test and the comparision of AIC, BIC and loglik, we can conclude that the random effect is significant since this mixed model is significantly different from the OLS model. It has smaller AIC and BIC, and larger logLik. (Though the degree of improvement is not large.)
+
+### Additional Analysis
+For simplicity we didn't include any weights in the above study. In the additional analysis, our group repeat our analysis on weighted data. This is just an unnecessary but beneficial addition so we only use R language to achieve this part and we omit most codes and output here because they are quite similar to the above analysis. The result is consistent to our above results.
+
+We choose WTMEC2YR - Both Interviewed and MEC Examined Sample Persons here, beacause our interested variables are from both Interviewed and MEC Examined datasets. What's more, we find family poverty income ratio (PIR) also has a certain degree of impact on CVH, so we also include this variable in our model here. Our data size is 1209 now.
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+# merge all seperate datasets together by SEQN
+raw_data<-X_variable_w%>%inner_join(health_insurance, by = "SEQN")%>%
+  inner_join(Smoking, by = "SEQN")%>%
+  inner_join(BMI, by = "SEQN")%>%
+  inner_join(Blood_pressure, by = "SEQN")%>%
+  inner_join(Diet, by = "SEQN")%>%
+  inner_join(Physical_Activity, by = "SEQN")%>%
+  inner_join(Blood_Cholesterol, by = "SEQN")%>%
+  inner_join(Blood_Glucose, by = "SEQN")
+data<-raw_data%>%transmute(SEQN,CVH=smoking+Blood_pressure+phy_act+blood_cho+blood_glu+BMI+Diet,smoking,Blood_pressure,phy_act,blood_cho,blood_glu,BMI,Diet,gender,age,race,education,insurance,pir,weight)
+# Then we get our final version dataset
+data
+```
+
+Samely, we first exploit the data here we will show the boxplot for age_group variable. The difference between groups is still quite obvious.
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+data$weight=floor(data$weight)
+data$age_group=ceiling(data$age/10)-3
+data$age_group[data$age_group==-1]=0
+data$pir_group=ceiling(data$pir/1)
+data_plot=sample_n(data,600000,replace=TRUE,weight=weight)
+```
+
+```{r}
+data_plot=sample_n(data,600000,replace=TRUE,weight=weight)
+qplot(factor(age_group), CVH, colour = factor(age_group), geom = "boxplot", data = data_plot)
+```
+
+Then we analyze the relationship between gender and each indicator of CVH score using logistic model and get the following result. Compared to the model without weight, we found that this result is quite similar to the previous one. Note that now gender also has significant effect on BMI now. females tend to have normal BMI than males. 
+
+| factor         | gender_effect | p_value      | significance |
+|----------------|---------------|--------------|--------------|
+| smoking        | -0.560880557  | 2.130398e-06 | ***          |
+| Blood_pressure | -0.863902048  | 8.607504e-12 | ***          |
+| phy_act        | 0.304260944   | 1.551603e-02 | *            |
+| blood_cho      | 0.105336746   | 3.712437e-01 |              |
+| blood_glu      | -0.930371413  | 9.869334e-12 | ***          |
+| BMI            | -0.345588302  | 6.075570e-03 | **           |
+| Diet           | -0.005282912  | 9.703731e-01 |              |
+\*p<0.5;\*\*p<0.01;\*\*\*p<0.001
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+data$weight_logistic=floor(data$weight/1000)+1
+gender_smoking <- summary(glm(smoking~gender+education+age+insurance+race+pir,data=data, family = "quasibinomial",weight=weight_logistic))
+gender_BP <-summary(glm(Blood_pressure~gender+education+age+insurance+race+pir,data, family = "quasibinomial",weight=weight_logistic))
+gender_phy <- summary(glm(phy_act~gender+education+age+insurance+race+pir,data, family = "quasibinomial",weight=weight_logistic))
+gender_BC <- summary(glm(blood_cho~gender+education+age+insurance+race+pir,data, family = "quasibinomial",weight=weight_logistic))
+gender_BG <- summary(glm(blood_glu~gender+education+age+insurance+race+pir,data, family = "quasibinomial",weight=weight_logistic))
+gender_BMI <- summary(glm(BMI~gender+education+age+insurance+race+pir,data, family = "quasibinomial",weight=weight_logistic))
+gender_Diet <- summary(glm(Diet~gender+education+age+insurance+race+pir,data, family = "quasibinomial",weight=weight_logistic))
+seperate<-data.frame(factor=c("smoking","Blood_pressure","phy_act","blood_cho","blood_glu","BMI","Diet"),gender_effect=rep(0,7),p_value=rep(0,7),significance=rep("*",7),stringsAsFactors = FALSE)
+j=1
+for (i in list(gender_smoking,gender_BP,gender_phy,gender_BC,gender_BG,gender_BMI,gender_Diet)){
+  seperate$gender_effect[j]=i$coefficients[2,1]
+  seperate$p_value[j]=i$coefficients[2,4]
+  p=rank(c(i$coefficients[2,4],0.001,0.01,0.05,0.1))[1]
+  seperate$significance[j]=switch(p,
+                                  "***",
+                                  "**",
+                                  "*",
+                                  ".",
+                                  " ")
+  j=j+1
+}
+#formattable::formattable(seperate)
+```
+
+Then we treat overall CVH score as continuous variable and conduct OLS regression. We find the optimal OLS model is CVH~gender+education+age+pir and the result is as follows. (Note, we also conduct full model, stepwise selection and boxcox. For brevity we omit the process.)
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+OLS_full<-lm(CVH~gender+race+education+insurance+age+pir,data,weights = weight)
+summary(OLS_full)
+# R square is still quite small but anyway this model is better than null model based on F test.
+OLS_opt<-lm(CVH~gender+education+age+pir,data,weights = weight)
+summary(OLS_opt)
+OLS2<-lm(CVH+1~gender+education+pir+age,data,weights = weight)
+library(MASS)
+boxcox(OLS2,plotit=T)# 1 is in the confidence interval so no need to do transformation
+dat=data.frame(fitted.values=as.vector(OLS_opt$fitted),residuals=as.vector(OLS_opt$residuals))
+ggplot(data=dat,aes(x=fitted.values,y=residuals))+geom_point(color="red",alpha=0.1)+geom_smooth(se=T)
+```
+```{r echo=TRUE}
+OLS_opt<-lm(CVH~gender+education+age+pir,data,weights = weight)
+summary(OLS_opt)
+```
 
 
-To conclude, factors related to a favorable CVH score included insurance covered, younger age, female sex, and a higher level of education.
 
-So the answer to the question we brought up is yes, women tend to have a better cardiovascular health condition than men in the US. 
+Then we fit the mixed effect model which treat age_group as random effect and test whether random effect is warranted:
+```{r message=FALSE, warning=FALSE}
+data$rescale_weight=data$weight/sum(data$weight)
+mixed1=lmer(CVH~gender+age+education+pir+(1|age_group), data= data,weights=rescale_weight,REML=F)
+summary(mixed1)
+```
+
+```{r eval=FALSE, message=FALSE, warning=FALSE, include=FALSE}
+Anova(mixed1)
+dat=data.frame(fitted.values=as.vector(fitted(mixed1)),residuals=as.vector(residuals(mixed1)))
+ggplot(data=dat,aes(x=fitted.values,y=residuals))+geom_point(color="red",alpha=0.1)+geom_smooth(se=T)
+```
+
+```{r echo=TRUE}
+# lm.test
+dev1 = -2*logLik(mixed1);dev0 = -2*logLik(OLS_opt)
+devdiff = as.numeric(dev0-dev1)
+dfdiff <- attr(dev1,"df")-attr(dev0,"df"); 
+cat('Chi-square =', devdiff, '(df=', dfdiff,'), p =', 
+    pchisq(devdiff,dfdiff,lower.tail=FALSE))
+```
+We also compare the AIC and BIC between the mixed model and optinal OLS model. we get the value of AIC(mixed1)-AIC(OLS_opt) and BIC(mixed1)-BIC(OLS_opt):
+```{r}
+AIC(mixed1)-AIC(OLS_opt)
+BIC(mixed1)-BIC(OLS_opt)
+```
+From the result above we can conclude that the random effects are significant. This is consistent with our previous result.
+
+Again, this addition analysis is just an supplement to our core analysis. It takes weights into consideration and the corn result is consistent with our final result.  
+
