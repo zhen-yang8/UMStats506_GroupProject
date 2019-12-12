@@ -97,7 +97,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 #### Data visualization
 
-For the predictor variables, we create boxplots for each of the categorical variable. Since `age` is a continuous variable, which is hard to make a boxplot, we generate a new variable called `age_decades` which group every 10 years people into one category (i.e. divided with no remainder). 
+For the predictor variables, we create boxplots for each of the categorical variable. Since `age` is a continuous variable, which is hard to make a boxplot, we generate a new variable called `age_decades` which group every 10 years people into one category (i.e. divided by 10 with no remainder). 
 ![](./rmd_output/python_boxplot.png)
 
 #### Logistic regression on each indicator of CVH
