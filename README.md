@@ -15,15 +15,15 @@ We will first investigate whether gender causes an effect on each of the seven m
 
 ### Programming softwares and File Description:
 
-- Zhen Yang: Python, see file *Python_ZhenYang.ipynb*
+- Zhen Yang: Python, see file [*Python_ZhenYang.ipynb*](https://github.com/zhen-yang8/UMStats506_GroupProject/blob/master/Python_ZhenYang.ipynb)
 
-- Yueyang Zhang: R, see file *R_YueyangZhang.Rmd*
+- Yueyang Zhang: R, see file [*R_YueyangZhang.Rmd*](https://github.com/zhen-yang8/UMStats506_GroupProject/blob/master/R_YueyangZhang.Rmd)
 
-- Kaiwen Wang: Stata, see file *Stata_KarenWang.do*
+- Karen Wang: Stata, see file [*Stata_KarenWang.do*](https://github.com/zhen-yang8/UMStats506_GroupProject/blob/master/Stata_KarenWang.do)
 
-Our final report see file *group_proj.html* and *group_proj.Rmd* (accompanied with folder *rmd_output*).
+Our final report see file [*group_proj.html*](https://github.com/zhen-yang8/UMStats506_GroupProject/blob/master/group_proj.html) and [*group_proj.Rmd*](https://github.com/zhen-yang8/UMStats506_GroupProject/blob/master/group_proj.Rmd) (accompanied with folder [*rmd_output*](https://github.com/zhen-yang8/UMStats506_GroupProject/tree/master/rmd_output)).
 
-Datasets are downloaded from NHANES (National Health and Nutrition Examination Survey) from year [2005 - 2006](https://wwwn.cdc.gov/nchs/nhanes/ContinuousNhanes/Default.aspx?BeginYear=2005), which is stored in folder *data_NHANES*.
+Datasets are downloaded from NHANES (National Health and Nutrition Examination Survey) from year [2005 - 2006](https://wwwn.cdc.gov/nchs/nhanes/ContinuousNhanes/Default.aspx?BeginYear=2005), which is stored in folder [*data_NHANES*](https://github.com/zhen-yang8/UMStats506_GroupProject/tree/master/data_NHANES).
 
 
 
