@@ -220,7 +220,6 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 }
 ```
 
-We first process the data before fitting a model.
 ```{r echo=FALSE, message=FALSE, warning=FALSE}
 #library(MASS)
 #detach("package:MASS", unload=TRUE)
@@ -304,10 +303,9 @@ raw_data<-X_variable%>%inner_join(health_insurance, by = "SEQN")%>%
   inner_join(Blood_Glucose, by = "SEQN")
 data<-raw_data%>%transmute(SEQN,CVH=smoking+Blood_pressure+phy_act+blood_cho+blood_glu+BMI+Diet,smoking,Blood_pressure,phy_act,blood_cho,blood_glu,BMI,Diet,gender,age,race,education,insurance)
 # Then we get our final version dataset
-data
 ```
 #### Data Summary
-This is the summary of our main variables:
+We first process the data before fitting a model. Finally we got a dataset which has 1245 rows. And here is a summary of our main variables:
 ```{r warning=FALSE}
 summary(data%>%select(CVH,gender,age,insurance,race,education))
 ```
