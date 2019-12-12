@@ -3,6 +3,16 @@
 
 Group members: Zhen Yang, Yueyang Zhang, Karen Wang
 
+#### Thesis
+Differences on Cardiovascular Health among Gender
+
+Cardiovascular health (CVH) is one of the greatest health problems across the entire globe. Overall, heart disease, is the No. 1 killer in the United States. Therefore, it is interesting to see if gender have an impact on cardiovascular health.
+
+The American Heart Association defined a new concept as *Cardiovascular Health*, which is determined by the presence of 7 metrics: smoking, body mass index (BMI), physical activity, diet, blood cholesterol, blood glucose and blood pressure.
+
+We will first investigate whether gender causes an effect on each of the seven metrics of cardiovascular health using logistic regression, and then combining them into one model, analyze the impact of gender on the overall cardiovascular health usng OLS and mixed model.
+
+
 #### Softwares:
 
 - Zhen Yang: Python
