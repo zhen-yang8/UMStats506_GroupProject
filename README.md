@@ -4,7 +4,7 @@
 Group members: Zhen Yang, Yueyang Zhang, Karen Wang
 
 #### Thesis
-Differences on Cardiovascular Health among Gender
+- Differences on Cardiovascular Health among Gender
 
 Cardiovascular health (CVH) is one of the greatest health problems across the entire globe. Overall, heart disease, is the No. 1 killer in the United States. Therefore, it is interesting to see if gender have an impact on cardiovascular health.
 
@@ -15,11 +15,13 @@ We will first investigate whether gender causes an effect on each of the seven m
 
 #### Softwares:
 
-- Zhen Yang: Python
+- Zhen Yang: Python, see Python_ZhenYang.ipynb
 
-- Yueyang Zhang: R
+- Yueyang Zhang: R, see R_YueyangZhang.Rmd
 
-- Kaiwen Wang: Stata
+- Kaiwen Wang: Stata, see Stata_KarenWang.do
+
+(Our final report see group_proj.html and group_proj.Rmd)
 
 
 Proposal is documented in Google Docs [here](https://docs.google.com/document/d/1iRX6u0wovKHre58j1p7ELH0KJ6YJyMJgX7yOnMS0kLY/edit#heading=h.pco182auas3).
