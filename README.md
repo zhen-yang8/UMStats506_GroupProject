@@ -5,7 +5,7 @@ Group members: Zhen Yang, Yueyang Zhang, Karen Wang
 
 ### Thesis
 
-**Differences on Cardiovascular Health among Gender**
+**Differences in Cardiovascular Health between Genders**
 
 Cardiovascular health (CVH) is one of the greatest health problems across the entire globe. Overall, heart disease, is the No. 1 killer in the United States. Therefore, it is interesting to see if gender have an impact on cardiovascular health.
 
