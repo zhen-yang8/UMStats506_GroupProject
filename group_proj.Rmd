@@ -1,5 +1,5 @@
 ---
-title: "Differences on Cardiovascular Health among Gender"
+title: "Differences in Cardiovascular Health between Genders"
 author: Zhen Yang, Yueyang Zhang, Karen Wang
 date: "December, 2019"
 output:
@@ -72,7 +72,7 @@ Regression models are adopted in the whole analysis, which is a powerful and pop
     $$ \log\frac{p_{blood\_pressure}}{1-p_{blood\_pressure}} = \beta_0 + \beta_1 X_{gender} + \beta_2 X_{age} + \beta_3 X_{race} + \beta_4 X_{education} + \beta_5 X_{insurance} $$
 
 
-2. The second part concerns with gender’s effect on the overall CVH scores by adopting several regression models, from multiple linear regression to linear mixed model. Precisely, we first use the ordinary least squares criterion to fit a multiple linear regression model on all predictor variables. By examining the significance of each variable, we decide to take out `race` since it has a very large p-value. After reducing to four variables, we fit the linear model again and re-examine the significance level of our variables. However, linear model is not sufficient to get the result. We decided to take a step further applying mixed linear model. In order to see the differences among groups, we drew boxplots on each of the variables after the variable selection by CVH scores.
+2. The second part concerns with gender’s effect on the expected CVH scores by adopting several regression models, from multiple linear regression to linear mixed model. Precisely, we first use the ordinary least squares criterion to fit a multiple linear regression model on all predictor variables. By examining the significance of each variable, we decide to take out `race` since it has a very large p-value. After reducing to four variables, we fit the linear model again and re-examine the significance level of our variables. However, linear model is not sufficient to get the result. We decided to take a step further applying mixed linear model. In order to see the differences among groups, we drew boxplots on each of the variables after the variable selection by expected CVH scores.
 
     The multiple linear regression is expressed as
     $$ \text{CVH} = \beta_0 + \beta_1 X_{gender} + \beta_2 X_{age} + \beta_3 X_{race} + \beta_4 X_{education} + \beta_5 X_{insurance}  $$
@@ -481,10 +481,10 @@ Table: Side by Side Comparison on Coefficients of *Linear Mixed Effects Model* f
 
 |Coefficients/ Languages | Python | R         | Stata      |
 |------------------------|--------|-----------|------------|
-| Gender                 | -0.367(\*\*\*) | -0.368171(\*\*\*) | -0.358783(\*\*\*)  |
-| Age                    | -0.021(\*\*\*) | -0.019624(\*\*\*) | -0.0207172(\*\*\*) |
-| Education              | 0.176(\*\*\*)  | 0.176018(\*\*\*)  | 0.1783475(\*\*\*)  |
-| Insurance              | 0.209(\*)  | 0.211245(\*)  | 0.2110812(\*)  |
+| Gender                 | -0.367(\*\*\*) | -0.368(\*\*\*) | -0.359(\*\*\*)  |
+| Age                    | -0.021(\*\*\*) | -0.020(\*\*\*) | -0.021(\*\*\*) |
+| Education              | 0.176(\*\*\*)  | 0.176(\*\*\*)  | 0.178(\*\*\*)  |
+| Insurance              | 0.209(\*)  | 0.211(\*)  | 0.211(\*)  |
 
 \*p<0.5;\*\*p<0.01;\*\*\*p<0.001  
 
